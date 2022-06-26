@@ -1,0 +1,232 @@
+import { getDbConfig } from "./dbUtil"
+import { Connection, Request, TYPES } from "tedious"
+import { WINE_COLUMNS } from "../model/wine"
+
+const WINE_COLUMN_MAPPING = {
+  id: 0,
+  country: 1,
+  region: 2,
+  producer: 3,
+  varietal: 4,
+  appellation: 5,
+  vintage: 6,
+  color: 7,
+  rating: 8,
+  name: 9,
+  alcoholPct: 10,
+  dateAcquired: 11,
+  price: 12,
+  location: 13,
+  imageUrl: 14,
+  isFavorite: 15,
+}
+
+const getConnection = () => {
+  let connection = null
+  if (!connection) {
+    connection = new Connection(getDbConfig())
+  }
+  return connection
+}
+
+export const executeSql = (context, verb, payload) =>
+  new Promise((resolve, reject) => {
+    var result = []
+    const paramPayload = payload != null ? JSON.stringify(payload) : ""
+
+    const connection = getConnection()
+    const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
+    const request = new Request(
+      `SELECT ${allColumns} FROM Wine`,
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (result == "" || result == null || result == "null") result = "[]"
+          resolve(result)
+        }
+        connection.close()
+      }
+    )
+
+    request.on("row", (columns) => {
+      const wineResult = WINE_COLUMNS.reduce(
+        (acc, col, index) => ({
+          ...acc,
+          [col.name]: columns[index].value,
+        }),
+        {}
+      )
+      result.push(wineResult)
+    })
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
+
+  export const getWines = (queries) =>
+  new Promise((resolve, reject) => {
+    var result = []
+
+    const connection = getConnection()
+    const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
+    const whereClauses = Object.entries(queries).map(([key, value]) => `${key} = ${value}`).join(" AND ")
+    const selectString = `SELECT ${allColumns} FROM Wine WHERE ${whereClauses}`
+    console.log(`select string ${selectString}`)
+    const request = new Request(
+      selectString,
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (result == "" || result == null || result == "null") result = "[]"
+          resolve(result)
+        }
+        connection.close()
+      }
+    )
+
+    request.on("row", (columns) => {
+      const wineResult = WINE_COLUMNS.reduce(
+        (acc, col, index) => ({
+          ...acc,
+          [col.name]: columns[index].value,
+        }),
+        {}
+      )
+      result.push(wineResult)
+    })
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+    connection.connect()
+  })
+
+export const getWine = (id) =>
+  new Promise((resolve, reject) => {
+    var result = null
+
+    const connection = getConnection()
+    const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
+    const request = new Request(
+      `SELECT ${allColumns} FROM Wine WHERE Id = ${id}`,
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (result == "" || result == null || result == "null") result = null
+          resolve(result)
+        }
+      }
+    )
+
+    request.on("row", (columns) => {
+      result = WINE_COLUMNS.reduce(
+        (acc, col, index) => ({
+          ...acc,
+          [col.name]: columns[index].value,
+        }),
+        {}
+      )
+    })
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
+
+export const insertWine = (wine) =>
+  new Promise((resolve, reject) => {
+    var result = null
+
+    const connection = getConnection()
+    const allSqlColumns = WINE_COLUMNS.map((col) => col.sqlName).slice(1)
+    const sqlString = `INSERT INTO Wine (${allSqlColumns.join(
+      ","
+    )}) VALUES (${allSqlColumns.map((col) => `@${col}`).join(",")})`
+    console.log(`SQL String = ${sqlString}`)
+    const request = new Request(
+      `INSERT INTO Wine (${allSqlColumns.join(",")}) VALUES (${allSqlColumns
+        .map((col) => `@${col}`)
+        .join(",")})`,
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (result == "" || result == null || result == "null") result = null
+          resolve(result)
+        }
+      }
+    )
+
+    request.on("row", (columns) => {
+      result = {
+        producer: columns[WINE_COLUMN_MAPPING.producer].value,
+        name: columns[WINE_COLUMN_MAPPING.name].value,
+        vintage: columns[WINE_COLUMN_MAPPING.vintage].value,
+        color: columns[WINE_COLUMN_MAPPING.color].value,
+        region: columns[WINE_COLUMN_MAPPING.region].value,
+        country: columns[WINE_COLUMN_MAPPING.country].value,
+        rating: columns[WINE_COLUMN_MAPPING.rating].value,
+      }
+    })
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
+
+export const updateWine = (id, value) =>
+  new Promise((resolve, reject) => {
+    var result = null
+
+    const connection = getConnection()
+    const allSqlColumns = WINE_COLUMNS.map((col) => col.sqlName).slice(1)
+    const sqlString = `UPDATE Wine SET Location = @Location WHERE Id = ${id}`
+    console.log(`SQL String = ${sqlString}`)
+    const request = new Request(sqlString, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        if (result == "" || result == null || result == "null") result = null
+        resolve(result)
+      }
+      connection.close()
+    })
+    console.log(`updating location to ${value}`)
+    request.addParameter("Location", TYPES.NVarChar, value)
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
