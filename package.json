@@ -7,6 +7,8 @@
     "lint": "next lint --dir pages --dir utils --dir shared"
   },
   "dependencies": {
+    "@azure/msal-browser": "^2.26.0",
+    "@azure/msal-react": "^1.4.2",
     "axios": "^0.27.2",
     "grommet": "^2.24.0",
     "grommet-icons": "^4.7.0",

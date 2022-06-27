@@ -1,18 +1,16 @@
-import React, { useState } from 'react';
-import {
-  Box, Heading, Text, Button, Layer,
-} from 'grommet';
-import { getWine } from '../../utils/connectDb';
+import React, { useState } from "react"
+import { Box, Heading, Text, Button, Layer } from "grommet"
+import { getWine } from "../../utils/connectDb"
 import { WINE_COLUMNS } from "../../model/wine"
 import styled from "styled-components"
 import Link from "next/link"
 import Image from "next/image"
 import axios from "axios"
-
+import { AuthenticatedTemplate, useMsal } from "@azure/msal-react"
 
 const WineRemover = styled.div`
   // display: flex;
-  &:hover{
+  &:hover {
     cursor: pointer;
   }
   div {
@@ -26,43 +24,41 @@ const WineRemover = styled.div`
 const Property = ({ name, value }) => (
   <Box direction="row-responsive" gap="small">
     <Box width="small">
-      <Text>
-        {name}
-      </Text>
+      <Text>{name}</Text>
     </Box>
     <Text>
-      <strong>
-        {value}
-      </strong>
+      <strong>{value}</strong>
     </Text>
   </Box>
 )
 
-const EXCLUDED_COLUMNS = ["Id", "ImageUrl", "Location"]
+const EXCLUDED_COLUMNS = ["Id", "ImageUrl", "Location", "Price"]
 const Wine = ({ wine }) => {
-  const [currentWine, setCurrentWine] = useState(wine);
-  const [open, setOpen] = useState(false);
+  const [currentWine, setCurrentWine] = useState(wine)
+  const [open, setOpen] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState(null)
-  const location = currentWine.Location.split("|").map(loc => loc.trim())
-  const onClose = () => setOpen(false);
+  const { instance } = useMsal()
+  const location = currentWine.Location.split("|").map((loc) => loc.trim())
+  const onClose = () => setOpen(false)
   const onOpen = (loc) => () => {
     setSelectedLocation(loc)
-    setOpen(true);
+    setOpen(true)
   }
 
   const handleRemoveWine = async () => {
     console.log(`Removing ${selectedLocation}`)
-    const newValue = location.filter(loc => loc !== selectedLocation)
+    const newValue = location.filter((loc) => loc !== selectedLocation)
     console.log(`After removal: ${newValue}`)
 
-    axios.post("/api/updateWine", {
-      id: wine.Id,
-      location: newValue,
-    }).then(res => {
-      console.log(`new wine is ${JSON.stringify(res)}`)
-      setCurrentWine(res.data)
-    })
-
+    axios
+      .post("/api/updateWine", {
+        id: wine.Id,
+        location: newValue,
+      })
+      .then((res) => {
+        console.log(`new wine is ${JSON.stringify(res)}`)
+        setCurrentWine(res.data)
+      })
   }
   const RemoveDialog = () => (
     <Layer
@@ -75,14 +71,16 @@ const Wine = ({ wine }) => {
         <Heading level={3} margin="none">
           Confirm
         </Heading>
-        <Text>This will remove wine from your inventory. Do you want to proceed?</Text>
+        <Text>
+          This will remove wine from your inventory. Do you want to proceed?
+        </Text>
         <Box
           as="footer"
           gap="small"
           direction="row"
           align="center"
           justify="end"
-          pad={{ top: 'medium', bottom: 'small' }}
+          pad={{ top: "medium", bottom: "small" }}
         >
           <Button label="No" onClick={onClose} color="dark-3" />
           <Button
@@ -92,8 +90,8 @@ const Wine = ({ wine }) => {
               </Text>
             }
             onClick={() => {
-              handleRemoveWine();
-              onClose();
+              handleRemoveWine()
+              onClose()
             }}
             primary
             color="status-critical"
@@ -104,9 +102,7 @@ const Wine = ({ wine }) => {
   )
   return (
     <>
-      <Link href="/">
-        Back to home page
-      </Link>
+      <Link href="/">Back to home page</Link>
       <Box pad="medium">
         <Box
           direction="row"
@@ -119,46 +115,60 @@ const Wine = ({ wine }) => {
             {currentWine.Vintage} {currentWine.Name}
           </Heading>
         </Box>
-        <Box
-          direction="row-responsive"
-
-          gap="small"
-        >
-          <Box
-            width="50%"
-            align='center'
-          >
+        <Box direction="row-responsive" gap="small">
+          <Box width="50%" align="center">
             <img src={wine.ImageUrl} height={500} alt={`wine-pic-${wine.Id}`} />
           </Box>
 
-          <Box
-            gap="medium"
-            margin={{ bottom: 'large' }}
-          >
-            {WINE_COLUMNS.filter(col => !EXCLUDED_COLUMNS.includes(col.name)).map(col => (<Property
-              name={col.name}
-              value={col.transform ? col.transform(currentWine[col.name]) : currentWine[col.name]}
-              key={`column-${col}`}
-            />))}
-            <Box direction="row-responsive" gap="small">
-              <Box width="small">
-                <Text>
-                  Location
-                </Text>
+          <Box gap="medium" margin={{ bottom: "large" }}>
+            {WINE_COLUMNS.filter(
+              (col) => !EXCLUDED_COLUMNS.includes(col.name)
+            ).map((col) => (
+              <Property
+                name={col.name}
+                value={
+                  col.transform
+                    ? col.transform(currentWine[col.name])
+                    : currentWine[col.name]
+                }
+                key={`column-${col}`}
+              />
+            ))}
+            <AuthenticatedTemplate>
+              <Property
+                name="Price"
+                value={currentWine["Price"]}
+              />
+            </AuthenticatedTemplate>
+            <AuthenticatedTemplate>
+              <Box direction="row-responsive" gap="small">
+                <Box width="small">
+                  <Text>Location</Text>
+                </Box>
+                <Box direction="row-responsive">
+                  {location
+                    .map((loc) => loc.trim())
+                    .map((loc) => (
+                      <WineRemover
+                        onClick={onOpen(loc)}
+                        key={`wine-remover-${loc}`}
+                      >
+                        <div>{loc}</div>
+                        <img
+                          src="/bottle.png"
+                          width={70}
+                          alt={`wine-bottle-${loc}`}
+                        />
+                      </WineRemover>
+                    ))}
+                </Box>
               </Box>
-              <Box direction='row-responsive'>
-                {location.map(loc => loc.trim()).map(loc => <WineRemover onClick={onOpen(loc)} key={`wine-remover-${loc}`}>
-                  <div>{loc}</div>
-                  <img src="/bottle.png" width={70} alt={`wine-bottle-${loc}`} />
-                </WineRemover>)}
-              </Box>
-            </Box>
+            </AuthenticatedTemplate>
           </Box>
         </Box>
         {open && <RemoveDialog />}
       </Box>
     </>
-
   )
 }
 

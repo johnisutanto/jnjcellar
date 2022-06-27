@@ -17,6 +17,11 @@ import styled from "styled-components"
 import Link from "next/link"
 import Image from "next/image"
 import axios from "axios"
+import {
+  AuthenticatedTemplate,
+  UnauthenticatedTemplate,
+  useMsal,
+} from '@azure/msal-react';
 
 import { deepFreeze } from "grommet/utils"
 
@@ -52,10 +57,10 @@ const StyledHeader = styled(Header)`
 const Title = styled.span`
   font-family: monospace;
 `
-
 export default function Home({ wines }) {
   const [isMobile, setIsMobile] = useState(false)
   const [currentWines, setCurrentWines] = useState(wines)
+  const { instance } = useMsal();
 
   //choose the screen size
   const handleResize = () => {
@@ -92,7 +97,12 @@ export default function Home({ wines }) {
         {/* <Avatar src={gravatarLink} /> */}
         <Nav direction="row">
           <Anchor label="Home" href="#" />
-          <Anchor label="Login" href="#" />
+          <UnauthenticatedTemplate>
+            <Anchor label="Login" href="#" onClick={() => instance.loginRedirect()} />
+          </UnauthenticatedTemplate>
+          <AuthenticatedTemplate>
+            <Anchor label="Logout" href="#" onClick={() => instance.logoutRedirect()} />
+          </AuthenticatedTemplate>
           <Anchor label="About Us" href="#" />
         </Nav>
       </Header>
