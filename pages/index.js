@@ -1,5 +1,5 @@
 import Head from "next/head"
-import { executeSql } from "../utils/connectDb"
+import { executeSql, getWineFilters } from "../utils/connectDb"
 import {
   Grommet,
   Box,
@@ -57,12 +57,13 @@ const StyledHeader = styled(Header)`
 const Title = styled.span`
   font-family: monospace;
 `
-export default function Home({ wines }) {
+export default function Home({ wines, filters }) {
   const [isMobile, setIsMobile] = useState(false)
   const [currentWines, setCurrentWines] = useState(wines)
+  
   const { instance } = useMsal();
+  console.log(`the filters are ${JSON.stringify(filters)}`)
 
-  //choose the screen size
   const handleResize = () => {
     if (window.innerWidth < 720) {
       setIsMobile(true)
@@ -72,29 +73,39 @@ export default function Home({ wines }) {
   }
   const wineColorOptions = ["Red", "White", "Rose"]
   const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedCountry, setSelectedCountry] = useState(null)
   useEffect(() => {
     window.addEventListener("resize", handleResize)
   })
   const handleSearch = async () => {
-    axios.post("/api/search", {
-      Color: wineColorOptions.findIndex(color => color === selectedColor)
-    }).then(res => {
+    const params = {}
+    const colorIndex = wineColorOptions.findIndex(color => color === selectedColor)
+    if (colorIndex !== -1) {
+      params.Color = colorIndex
+    }
+    if (selectedCountry) {
+      params.Country = `'${selectedCountry}'`
+    }
+    axios.post("/api/search", params).then(res => {
       // console.log(`new wine is ${JSON.stringify(res)}`)
       setCurrentWines(res.data)
     })
 
   }
   useEffect(() => {
-    if (!selectedColor) return;
-    handleSearch()
-  }, [selectedColor])
+    if (!selectedColor && !selectedCountry) return;
+      handleSearch()
+  }, [selectedColor, selectedCountry])
   const handleColorChange = ({ option }) => {
     setSelectedColor(option)
   }
+  const handleCountryChange = ({ option }) => {
+    setSelectedCountry(option)
+  }
+
   return (
     <Grommet full theme={customTheme}>
       <Header background="light-4" pad="small">
-        {/* <Avatar src={gravatarLink} /> */}
         <Nav direction="row">
           <Anchor label="Home" href="#" />
           <UnauthenticatedTemplate>
@@ -127,14 +138,22 @@ export default function Home({ wines }) {
       </Header>
 
       <main>
-        <Box direction="row" pad="large">
+        <Box direction="row" pad="large" gap="large">
           <Select
-            id="select"
-            name="select"
+            id="select-color"
+            name="select-color"
             placeholder="Wine Color"
             value={selectedColor}
             options={wineColorOptions}
             onChange={handleColorChange}
+          />
+          <Select
+            id="select-country"
+            name="select-country"
+            placeholder="Country"
+            value={selectedCountry}
+            options={filters}
+            onChange={handleCountryChange}
           />
         </Box>
         <Box pad="large" fill>
@@ -204,10 +223,9 @@ export default function Home({ wines }) {
 
 export async function getServerSideProps(context) {
   const wines = await executeSql()
-
-  // const isConnected = await client.isConnected() // Returns true or false
+  const filters = await getWineFilters()
 
   return {
-    props: { wines },
+    props: { wines, filters },
   }
 }

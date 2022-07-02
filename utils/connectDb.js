@@ -37,7 +37,7 @@ export const executeSql = (context, verb, payload) =>
     const connection = getConnection()
     const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
     const request = new Request(
-      `SELECT ${allColumns} FROM Wine`,
+      `SELECT ${allColumns} FROM Wine ORDER BY Rating DESC`,
       (err) => {
         if (err) {
           reject(err)
@@ -78,7 +78,7 @@ export const executeSql = (context, verb, payload) =>
     const connection = getConnection()
     const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
     const whereClauses = Object.entries(queries).map(([key, value]) => `${key} = ${value}`).join(" AND ")
-    const selectString = `SELECT ${allColumns} FROM Wine WHERE ${whereClauses}`
+    const selectString = `SELECT ${allColumns} FROM Wine WHERE ${whereClauses} ORDER BY Rating DESC`
     console.log(`select string ${selectString}`)
     const request = new Request(
       selectString,
@@ -219,6 +219,38 @@ export const updateWine = (id, value) =>
     })
     console.log(`updating location to ${value}`)
     request.addParameter("Location", TYPES.NVarChar, value)
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
+
+  export const getWineFilters = () =>
+  new Promise((resolve, reject) => {
+    var result = []
+
+    const connection = getConnection()
+    const request = new Request(
+      `SELECT DISTINCT Country FROM Wine`,
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (result == "" || result == null || result == "null") result = null
+          resolve(result)
+        }
+      }
+    )
+
+    request.on("row", (res) => {
+      result.push(res[0].value)
+    })
 
     connection.on("connect", (err) => {
       if (err) {
