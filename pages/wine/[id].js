@@ -102,7 +102,6 @@ const Wine = ({ wine }) => {
   )
   return (
     <>
-      <Link href="/">Back to home page</Link>
       <Box pad="medium">
         <Box
           direction="row"
@@ -137,7 +136,7 @@ const Wine = ({ wine }) => {
             <AuthenticatedTemplate>
               <Property
                 name="Price"
-                value={currentWine["Price"]}
+                value={`$ ${currentWine["Price"].toFixed(2)}`}
               />
             </AuthenticatedTemplate>
             <AuthenticatedTemplate>

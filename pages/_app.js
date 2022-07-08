@@ -1,11 +1,14 @@
 import "../styles.css"
 import { MsalProvider } from "@azure/msal-react"
 import { msalInstance } from "../services/msal"
+import Layout from "./layout"
 
 export default function MyApp({ Component, pageProps }) {
   return (
     <MsalProvider instance={msalInstance}>
-      <Component {...pageProps} />
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
     </MsalProvider>
   )
 }

@@ -231,6 +231,38 @@ export const updateWine = (id, value) =>
     connection.connect()
   })
 
+  export const getFilters = (column) =>
+  new Promise((resolve, reject) => {
+    var result = []
+
+    const connection = getConnection()
+    const request = new Request(
+      `SELECT DISTINCT ${column} FROM Wine`,
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (result == "" || result == null || result == "null") result = null
+          resolve(result)
+        }
+      }
+    )
+
+    request.on("row", (res) => {
+      result.push(res[0].value)
+    })
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
+
   export const getWineFilters = () =>
   new Promise((resolve, reject) => {
     var result = []
@@ -250,6 +282,43 @@ export const updateWine = (id, value) =>
 
     request.on("row", (res) => {
       result.push(res[0].value)
+    })
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
+
+  export const getBottleCounts = (column) =>
+  new Promise((resolve, reject) => {
+    var result
+
+    const connection = getConnection()
+    const request = new Request(
+      `SELECT count(*) FROM 
+      (SELECT
+        Id,
+        value
+      FROM Wine
+      CROSS APPLY STRING_SPLIT(Location, '|')) mywine`,
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (result == "" || result == null || result == "null") result = null
+          resolve(result)
+        }
+      }
+    )
+
+    request.on("row", (res) => {
+      result = res[0].value
     })
 
     connection.on("connect", (err) => {
