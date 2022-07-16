@@ -1,6 +1,7 @@
 import { getDbConfig } from "./dbUtil"
 import { Connection, Request, TYPES } from "tedious"
 import { WINE_COLUMNS } from "../model/wine"
+import { isEmpty } from "lodash"
 
 const WINE_COLUMN_MAPPING = {
   id: 0,
@@ -71,27 +72,36 @@ export const executeSql = (context, verb, payload) =>
     connection.connect()
   })
 
-  export const getWines = (queries) =>
+const partialMatchColumns = ["Varietal"]
+export const getWines = (queries) =>
   new Promise((resolve, reject) => {
     var result = []
 
     const connection = getConnection()
     const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
-    const whereClauses = Object.entries(queries).map(([key, value]) => `${key} = ${value}`).join(" AND ")
-    const selectString = `SELECT ${allColumns} FROM Wine WHERE ${whereClauses} ORDER BY Rating DESC`
-    console.log(`select string ${selectString}`)
-    const request = new Request(
-      selectString,
-      (err) => {
-        if (err) {
-          reject(err)
+    let whereClauses = Object.entries(queries)
+      .map(([key, value]) => {
+        if (partialMatchColumns.includes(key)) {
+          return `${key} LIKE '%${value.substring(1, value.length - 1)}%'`
         } else {
-          if (result == "" || result == null || result == "null") result = "[]"
-          resolve(result)
+          return `${key} = ${value}`
         }
-        connection.close()
+      })
+      .join(" AND ")
+    if (!isEmpty(whereClauses)) {
+      whereClauses = `WHERE ${whereClauses}`
+    }
+    const selectString = `SELECT ${allColumns} FROM Wine ${whereClauses} ORDER BY Rating DESC`
+    console.log(`select string ${selectString}`)
+    const request = new Request(selectString, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        if (result == "" || result == null || result == "null") result = "[]"
+        resolve(result)
       }
-    )
+      connection.close()
+    })
 
     request.on("row", (columns) => {
       const wineResult = WINE_COLUMNS.reduce(
@@ -231,7 +241,7 @@ export const updateWine = (id, value) =>
     connection.connect()
   })
 
-  export const getFilters = (column) =>
+export const getFilters = (column) =>
   new Promise((resolve, reject) => {
     var result = []
 
@@ -263,39 +273,40 @@ export const updateWine = (id, value) =>
     connection.connect()
   })
 
-  export const getWineFilters = () =>
+export const getWineFilters = () =>
   new Promise((resolve, reject) => {
-    var result = []
+    var result = {}
 
     const connection = getConnection()
-    const request = new Request(
-      `SELECT DISTINCT Country FROM Wine`,
-      (err) => {
-        if (err) {
-          reject(err)
-        } else {
-          if (result == "" || result == null || result == "null") result = null
-          resolve(result)
-        }
+    const request = new Request(`[dbo].[RetrieveWineFilters]`, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        if (result == "" || result == null || result == "null") result = null
+        resolve(result)
       }
-    )
-
-    request.on("row", (res) => {
-      result.push(res[0].value)
+    })
+    request.addOutputParameter("countries", TYPES.NVarChar)
+    request.addOutputParameter("regions", TYPES.NVarChar)
+    request.addOutputParameter("producers", TYPES.NVarChar)
+    request.addOutputParameter("varietals", TYPES.NVarChar)
+    request.addOutputParameter("appellations", TYPES.NVarChar)
+    request.on("returnValue", (paramName, value, metadata) => {
+      result[paramName] = JSON.parse(value).map((obj) => Object.values(obj)[0])
     })
 
     connection.on("connect", (err) => {
       if (err) {
         reject(err)
       } else {
-        connection.execSql(request)
+        connection.callProcedure(request)
       }
     })
 
     connection.connect()
   })
 
-  export const getBottleCounts = (column) =>
+export const getBottleCounts = (column) =>
   new Promise((resolve, reject) => {
     var result
 

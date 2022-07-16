@@ -12,15 +12,15 @@ import {
   TextArea,
   TextInput,
 } from "grommet"
-import { getFilters } from "../../utils/connectDb"
+import { getWineFilters } from "../../utils/connectDb"
 import DropDown from "../../components/DropDown"
 
-export default function AddWine({ countries, regions, producers, appellations, varietals }) {
-  const [countryOptions, setCountryOptions] = useState(countries)
-  const [regionOptions, setRegionOptions] = useState(regions)
-  const [producerOptions, setProducerOptions] = useState(producers)
-  const [appellationOptions, setAppellationOptions] = useState(appellations)
-  const [varietalOptions, setVarietalOptions] = useState(varietals)
+export default function AddWine({ filters }) {
+  const [countryOptions, setCountryOptions] = useState(filters.countries)
+  const [regionOptions, setRegionOptions] = useState(filters.regions)
+  const [producerOptions, setProducerOptions] = useState(filters.producers)
+  const [appellationOptions, setAppellationOptions] = useState(filters.appellations)
+  const [varietalOptions, setVarietalOptions] = useState(filters.varietals)
 
   const [name, setName] = useState("")
   const [country, setCountry] = useState("")
@@ -34,7 +34,7 @@ export default function AddWine({ countries, regions, producers, appellations, v
   const [imageUrl, setImageUrl] = useState("")
   const [alcoholPct, setAlcoholPct] = useState("")
   const [rating, setRating] = useState("")
-  const [varietal, setVarietal] = useState("")
+  const [varietal, setVarietal] = useState([])
 
   useEffect(() => {
     console.log(`the value of countryOptions ${countryOptions}`)
@@ -136,6 +136,7 @@ export default function AddWine({ countries, regions, producers, appellations, v
             <DropDown
               options={varietalOptions}
               selectedOption={varietal}
+              multiple={true}
               onSelect={(value, isNew) => {
                 if (isNew) {
                   setVarietalOptions([...varietalOptions.slice(0, varietalOptions.length - 1), value])
@@ -198,14 +199,10 @@ export default function AddWine({ countries, regions, producers, appellations, v
 
 
 export async function getServerSideProps(context) {
-  const countries = await getFilters("Country")
-  const regions = await getFilters("Region")
-  const producers = await getFilters("Producer")
-  const appellations = await getFilters("Appellation")
-  const varietals = await getFilters("Varietal")
+  const filters = await getWineFilters()
 
   return {
-    props: { countries, regions, producers, appellations, varietals },
+    props: { filters },
   }
 }
 

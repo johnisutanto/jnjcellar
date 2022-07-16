@@ -1,11 +1,13 @@
 import { executeSql, getWineFilters } from "../../utils/connectDb"
 import {
+  Accordion,
+  AccordionPanel,
   Box,
   Card,
   Grid,
   Text,
   CardHeader,
-  Header,
+  Button,
   Select,
 } from "grommet"
 import React, { useState, useEffect } from "react"
@@ -13,7 +15,9 @@ import styled from "styled-components"
 import Link from "next/link"
 import Image from "next/image"
 import axios from "axios"
-import { useMsal } from "@azure/msal-react"
+import useQueryState from "../../utils/useQueryState"
+import usePrevious from "../../utils/usePrevious"
+import { isEqual, isNil } from "lodash"
 
 const HoverableCard = styled(Card)`
   &:hover {
@@ -22,13 +26,28 @@ const HoverableCard = styled(Card)`
   }
 `
 
+const FiltersContainer = styled.div`
+  margin: 0 32px;
+  & button {
+    margin: 10px;
+  }
+`
+const DEFAULT_FILTERS = {
+  country: null,
+  color: null,
+  region: null,
+  varietal: null,
+}
+
 export default function Home({ wines, filters }) {
   const [isMobile, setIsMobile] = useState(false)
   const [currentWines, setCurrentWines] = useState(wines)
+  const [wineFilters, setWineFilters] = useQueryState(DEFAULT_FILTERS)
+  const prevWineFilters = usePrevious(wineFilters)
 
-  const { instance } = useMsal()
-  console.log(`the filters are ${JSON.stringify(filters)}`)
-
+  const noFilters = Object.values(wineFilters).every(filter => isNil(filter))
+  // console.log(`the filters are ${JSON.stringify(filters)}`)
+  console.log(`the wineFilter = ${JSON.stringify(wineFilters)}`)
   const handleResize = () => {
     if (window.innerWidth < 720) {
       setIsMobile(true)
@@ -37,76 +56,91 @@ export default function Home({ wines, filters }) {
     }
   }
   const wineColorOptions = ["Red", "White", "Rose"]
-  const [selectedColor, setSelectedColor] = useState(null)
-  const [selectedCountry, setSelectedCountry] = useState(null)
   useEffect(() => {
     window.addEventListener("resize", handleResize)
   })
   const handleSearch = async () => {
     const params = {}
     const colorIndex = wineColorOptions.findIndex(
-      (color) => color === selectedColor
+      (color) => color === wineFilters.color
     )
     if (colorIndex !== -1) {
       params.Color = colorIndex
     }
-    if (selectedCountry) {
-      params.Country = `'${selectedCountry}'`
+    if (wineFilters.country) {
+      params.Country = `'${wineFilters.country}'`
     }
+    if (wineFilters.region) {
+      params.Region = `'${wineFilters.region}'`
+    }
+    if (wineFilters.varietal) {
+      params.Varietal = `'${wineFilters.varietal}'`
+    }
+    console.log(`we are calling with ${JSON.stringify(params)}`)
     axios.post("/api/search", params).then((res) => {
       setCurrentWines(res.data)
     })
   }
   useEffect(() => {
-    if (!selectedColor && !selectedCountry) return
-    handleSearch()
-  }, [selectedColor, selectedCountry])
-  const handleColorChange = ({ option }) => {
-    setSelectedColor(option)
-  }
-  const handleCountryChange = ({ option }) => {
-    setSelectedCountry(option)
+    if (!isEqual(prevWineFilters, wineFilters)) {
+      handleSearch()
+    }
+  }, [prevWineFilters, wineFilters])
+  const handleWineFilter =
+    (filterName) =>
+    ({ option }) => {
+      setWineFilters({
+        ...wineFilters,
+        [filterName]: option,
+      })
+    }
+  const clearAllFilters = () => {
+    setWineFilters(DEFAULT_FILTERS)
   }
 
   return (
     <>
-      {/* <Header
-        pad="medium"
-        background="url('https://wineimages.blob.core.windows.net/images/Cellar.png')"
-        height="200px"
-      >
-        <Box align="center" fill="horizontal">
-          <div
-            style={{
-              fontFamily: "GermanFont",
-              fontSize: isMobile ? 50 : 100,
-              color: "white",
-              textShadow:
-                "-3px 3px 0 #58181F, 3px 3px 0 #58181F, 3px -3px 0 #58181F, -3px -3px 0 #58181F",
-            }}
-          >
-            J&J Cellars
-          </div>
-        </Box>
-      </Header> */}
-      <Box direction="row" pad="large" gap="large">
-        <Select
-          id="select-color"
-          name="select-color"
-          placeholder="Wine Color"
-          value={selectedColor}
-          options={wineColorOptions}
-          onChange={handleColorChange}
-        />
-        <Select
-          id="select-country"
-          name="select-country"
-          placeholder="Country"
-          value={selectedCountry}
-          options={filters}
-          onChange={handleCountryChange}
-        />
-      </Box>
+      <Accordion>
+        <AccordionPanel label={`Wine Filters ${noFilters ? "" : "(filtered)"}`}>
+          <FiltersContainer>
+            <Select
+              id="select-color"
+              name="select-color"
+              placeholder="Wine Color"
+              value={wineFilters.color}
+              options={wineColorOptions}
+              onChange={handleWineFilter("color")}
+            />
+            <Select
+              id="select-country"
+              name="select-country"
+              placeholder="Country"
+              value={wineFilters.country}
+              options={filters.countries}
+              onChange={handleWineFilter("country")}
+            />
+            <Select
+              id="select-region"
+              name="select-region"
+              placeholder="Region"
+              value={wineFilters.region}
+              options={filters.regions}
+              onChange={handleWineFilter("region")}
+            />
+            <Select
+              id="select-varietal"
+              name="select-varietal"
+              placeholder="Varietal"
+              value={wineFilters.varietal}
+              options={filters.varietals}
+              onChange={handleWineFilter("varietal")}
+            />
+            <Button label="Clear All" onClick={clearAllFilters} primary />
+          </FiltersContainer>
+        </AccordionPanel>
+      </Accordion>
+
+      {/* </Box> */}
       <Box pad="large" fill>
         <Grid columns={isMobile ? "100%" : "small"} gap="large">
           {(currentWines || []).map((wine, index) => (

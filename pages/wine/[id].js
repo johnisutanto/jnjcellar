@@ -1,12 +1,13 @@
 import React, { useState } from "react"
-import { Box, Heading, Text, Button, Layer } from "grommet"
+import { Box, Heading, Text, Button, Layer, Anchor } from "grommet"
 import { getWine } from "../../utils/connectDb"
 import { WINE_COLUMNS } from "../../model/wine"
 import styled from "styled-components"
-import Link from "next/link"
 import Image from "next/image"
+import { Previous } from "grommet-icons"
 import axios from "axios"
 import { AuthenticatedTemplate, useMsal } from "@azure/msal-react"
+import { useRouter } from "next/router"
 
 const WineRemover = styled.div`
   // display: flex;
@@ -37,7 +38,7 @@ const Wine = ({ wine }) => {
   const [currentWine, setCurrentWine] = useState(wine)
   const [open, setOpen] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState(null)
-  const { instance } = useMsal()
+  const router = useRouter()
   const location = currentWine.Location.split("|").map((loc) => loc.trim())
   const onClose = () => setOpen(false)
   const onOpen = (loc) => () => {
@@ -110,6 +111,7 @@ const Wine = ({ wine }) => {
           gap="small"
           style={{ marginBottom: "60px" }}
         >
+          <Anchor icon={<Previous />} label="Back" href={null} gap="small" onClick={() => router.back()} />
           <Heading style={{ textAlign: "end", width: "100%" }}>
             {currentWine.Vintage} {currentWine.Name}
           </Heading>

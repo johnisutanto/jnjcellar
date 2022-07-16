@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Select } from "grommet"
 
-const DropDown = ({ options, selectedOption, onSelect }) => {
+const DropDown = ({ options, selectedOption, onSelect, multiple }) => {
   const [_options, _setOptions] = useState(options);
   const [searchValue, setSearchValue] = useState("");
   const prefix = "Create"
@@ -36,6 +36,7 @@ const DropDown = ({ options, selectedOption, onSelect }) => {
       placeholder="Select"
       value={selectedOption}
       options={_options}
+      multiple={multiple}
       onChange={({ option }) => {
         if (option.includes(prefix)) {
           
