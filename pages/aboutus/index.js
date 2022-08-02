@@ -1,17 +1,13 @@
 import { getBottleCounts } from "../../utils/connectDb"
-import { AuthenticatedTemplate, useMsal } from "@azure/msal-react"
+import { AuthenticatedTemplate } from "@azure/msal-react"
 import {
   Box,
-  Card,
-  Grid,
   Text,
-  CardHeader,
-  Header,
-  Select,
   Heading,
   Paragraph,
 } from "grommet"
 import styled from "styled-components"
+import { Center } from "@mantine/core"
 
 const MarginText = styled.div`
   margin-left: 20px;
@@ -24,6 +20,8 @@ const AboutUs = ({ bottleCounts }) => {
           About Us
         </Heading>
       </MarginText>
+      <Center>
+      </Center>
 
       <Box pad="medium" fill>
         <Paragraph fill>

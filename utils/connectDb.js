@@ -30,56 +30,18 @@ const getConnection = () => {
   return connection
 }
 
-export const executeSql = (context, verb, payload) =>
-  new Promise((resolve, reject) => {
-    var result = []
-    const paramPayload = payload != null ? JSON.stringify(payload) : ""
-
-    const connection = getConnection()
-    const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
-    const request = new Request(
-      `SELECT ${allColumns} FROM Wine ORDER BY Rating DESC`,
-      (err) => {
-        if (err) {
-          reject(err)
-        } else {
-          if (result == "" || result == null || result == "null") result = "[]"
-          resolve(result)
-        }
-        connection.close()
-      }
-    )
-
-    request.on("row", (columns) => {
-      const wineResult = WINE_COLUMNS.reduce(
-        (acc, col, index) => ({
-          ...acc,
-          [col.name]: columns[index].value,
-        }),
-        {}
-      )
-      result.push(wineResult)
-    })
-
-    connection.on("connect", (err) => {
-      if (err) {
-        reject(err)
-      } else {
-        connection.execSql(request)
-      }
-    })
-
-    connection.connect()
-  })
-
 const partialMatchColumns = ["Varietal"]
+const PAGE_SIZE = 15
 export const getWines = (queries) =>
   new Promise((resolve, reject) => {
     var result = []
+    var totalCount = 0
 
     const connection = getConnection()
     const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
-    let whereClauses = Object.entries(queries)
+    const page = queries?.page || 0
+    const offset = page * PAGE_SIZE
+    let whereClauses = Object.entries(queries?.q || {})
       .map(([key, value]) => {
         if (partialMatchColumns.includes(key)) {
           return `${key} LIKE '%${value.substring(1, value.length - 1)}%'`
@@ -91,14 +53,28 @@ export const getWines = (queries) =>
     if (!isEmpty(whereClauses)) {
       whereClauses = `WHERE ${whereClauses}`
     }
-    const selectString = `SELECT ${allColumns} FROM Wine ${whereClauses} ORDER BY Rating DESC`
+    const selectString = `
+      WITH WineResults AS
+      (SELECT ${allColumns} FROM Wine ${whereClauses}),
+      WineResultsCount AS
+      (SELECT COUNT(*) AS TotalRows FROM WineResults)
+
+      SELECT ${allColumns},TotalRows
+      FROM WineResults
+      CROSS JOIN WineResultsCount
+      ORDER BY Rating DESC
+      OFFSET ${offset} ROWS FETCH NEXT ${PAGE_SIZE} ROWS ONLY
+    `
     console.log(`select string ${selectString}`)
     const request = new Request(selectString, (err) => {
       if (err) {
         reject(err)
       } else {
         if (result == "" || result == null || result == "null") result = "[]"
-        resolve(result)
+        resolve({
+          results: result,
+          totalCount,
+        })
       }
       connection.close()
     })
@@ -111,6 +87,7 @@ export const getWines = (queries) =>
         }),
         {}
       )
+      totalCount = columns[WINE_COLUMNS.length].value
       result.push(wineResult)
     })
 
@@ -131,7 +108,13 @@ export const getWine = (id) =>
     const connection = getConnection()
     const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
     const request = new Request(
-      `SELECT ${allColumns} FROM Wine WHERE Id = ${id}`,
+      `
+      select ${allColumns}, Locations = 
+       (select (cast(Location as varchar(200))+'|') as [text()]
+       FROM Cellar c
+       WHERE c.WineId = ${id} for XML PATH(''))
+      from Wine w WHERE w.Id = ${id}
+      `,
       (err) => {
         if (err) {
           reject(err)
@@ -150,6 +133,7 @@ export const getWine = (id) =>
         }),
         {}
       )
+      result.Location = columns[columns.length - 1].value
     })
 
     connection.on("connect", (err) => {
@@ -166,26 +150,45 @@ export const getWine = (id) =>
 export const insertWine = (wine) =>
   new Promise((resolve, reject) => {
     var result = null
-
+    console.log(`wine is = ${JSON.stringify(wine)}`)
     const connection = getConnection()
+    const requiredColumns = [
+      "Name",
+      "Color",
+      "Country",
+      "Region",
+      "Producer",
+      "Appellation",
+      "Varietal",
+      "Vintage",
+      "Price",
+      "AlcoholPct",
+      "Rating",
+    ]
     const allSqlColumns = WINE_COLUMNS.map((col) => col.sqlName).slice(1)
-    const sqlString = `INSERT INTO Wine (${allSqlColumns.join(
+    const sqlString = `INSERT INTO Wine (${requiredColumns.join(
       ","
-    )}) VALUES (${allSqlColumns.map((col) => `@${col}`).join(",")})`
+    )}) VALUES (${requiredColumns.map((col) => `@${col}`).join(",")})`
     console.log(`SQL String = ${sqlString}`)
-    const request = new Request(
-      `INSERT INTO Wine (${allSqlColumns.join(",")}) VALUES (${allSqlColumns
-        .map((col) => `@${col}`)
-        .join(",")})`,
-      (err) => {
-        if (err) {
-          reject(err)
-        } else {
-          if (result == "" || result == null || result == "null") result = null
-          resolve(result)
-        }
+
+    const request = new Request(sqlString, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        if (result == "" || result == null || result == "null") result = null
+        resolve(result)
       }
-    )
+    })
+    requiredColumns.forEach((column) => {
+      const colType =
+        TYPES[WINE_COLUMNS.find((col) => col.name === column).type]
+      const colName = `${column[0].toLocaleLowerCase()}${column.slice(1)}`
+      const value = wine[colName]
+      request.addParameter(column, colType, value)
+      console.log(
+        `adding col ${column} with value ${value} for column name ${colName} ${colType}`
+      )
+    })
 
     request.on("row", (columns) => {
       result = {
@@ -337,6 +340,93 @@ export const getBottleCounts = (column) =>
         reject(err)
       } else {
         connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
+
+export const getEmptyShelves = () =>
+  new Promise((resolve, reject) => {
+    var result = []
+
+    const connection = getConnection()
+    const request = new Request(
+      `SELECT Location FROM Cellar WHERE CellarId = 'STAIRCASE' AND WineId IS NULL`,
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (result == "" || result == null || result == "null") result = null
+          resolve(result)
+        }
+      }
+    )
+
+    request.on("row", (res) => {
+      result.push(res[0].value)
+    })
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.execSql(request)
+      }
+    })
+
+    connection.connect()
+  })
+
+export const addWineToCellar = (id, locations) =>
+  new Promise((resolve, reject) => {
+    var result = null
+
+    const locationsStr = locations.join(",")
+    const connection = getConnection()
+    const request = new Request(`[dbo].[AddBottleToCellar]`, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        if (result == "" || result == null || result == "null") result = null
+        resolve(result)
+      }
+    })
+    request.addParameter("WineId", TYPES.Int, id)
+    request.addParameter("Locations", TYPES.VarChar, locationsStr)
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.callProcedure(request)
+      }
+    })
+
+    connection.connect()
+  })
+
+export const removeWineFromCellar = (id, location) =>
+  new Promise((resolve, reject) => {
+    var result = null
+
+    const connection = getConnection()
+    const request = new Request(`[dbo].[RemoveBottleFromCellar]`, (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        if (result == "" || result == null || result == "null") result = null
+        resolve(result)
+      }
+    })
+    request.addParameter("WineId", TYPES.Int, id)
+    request.addParameter("Location", TYPES.VarChar, location)
+
+    connection.on("connect", (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        connection.callProcedure(request)
       }
     })
 

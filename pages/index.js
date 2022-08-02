@@ -1,10 +1,78 @@
-const HomePage = () => {
+import React from "react"
+import { createStyles, Overlay, Container } from "@mantine/core"
+
+const useStyles = createStyles((theme) => ({
+  hero: {
+    position: "relative",
+    backgroundImage:
+      "url(https://wineimages.blob.core.windows.net/homeimages/CellarImage.jpg)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  },
+
+  container: {
+    height: 700,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    paddingBottom: theme.spacing.xl * 6,
+    zIndex: 1,
+    position: "relative",
+
+    [theme.fn.smallerThan("sm")]: {
+      height: 500,
+      paddingBottom: theme.spacing.xl * 3,
+    },
+  },
+
+  title: {
+    color: theme.white,
+    fontSize: 60,
+    fontWeight: 900,
+    lineHeight: 1.1,
+
+    [theme.fn.smallerThan("sm")]: {
+      fontSize: 40,
+      lineHeight: 1.2,
+    },
+
+    [theme.fn.smallerThan("xs")]: {
+      fontSize: 28,
+      lineHeight: 1.3,
+    },
+  },
+
+  description: {
+    color: theme.white,
+    maxWidth: 600,
+
+    [theme.fn.smallerThan("sm")]: {
+      maxWidth: "100%",
+      fontSize: theme.fontSizes.sm,
+    },
+  },
+
+  control: {
+    marginTop: theme.spacing.xl * 1.5,
+
+    [theme.fn.smallerThan("sm")]: {
+      width: "100%",
+    },
+  },
+}))
+
+export default function HomePage() {
+  const { classes } = useStyles()
+
   return (
-    <img
-      src="https://wineimages.blob.core.windows.net/homeimages/CellarImage.jpg"
-      style={{ objectFit: "cover", width: "100%", height: "500px" }}
-    />
+    <div className={classes.hero}>
+      <Overlay
+        gradient="linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, .65) 95%)"
+        opacity={1}
+        zIndex={0}
+      />
+      <Container className={classes.container}></Container>
+    </div>
   )
 }
-
-export default HomePage

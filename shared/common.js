@@ -10,3 +10,9 @@ export const WINE_COLUMNS = [
   //{ jsonName: "dateAcquired", sqlName: "DateAcquired" },
   // { jsonName: "isFavorite", sqlName: "IsFavorite" },
 ]
+
+export const WineColors = [
+  { value: 0, label: "Red" },
+  { value: 1, label: "White" },
+  { value: 2, label: "Rose" },
+]

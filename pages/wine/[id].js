@@ -1,174 +1,296 @@
-import React, { useState } from "react"
-import { Box, Heading, Text, Button, Layer, Anchor } from "grommet"
+import React, { Fragment, useState } from "react"
 import { getWine } from "../../utils/connectDb"
 import { WINE_COLUMNS } from "../../model/wine"
 import styled from "styled-components"
-import Image from "next/image"
-import { Previous } from "grommet-icons"
 import axios from "axios"
-import { AuthenticatedTemplate, useMsal } from "@azure/msal-react"
+import { AuthenticatedTemplate } from "@azure/msal-react"
 import { useRouter } from "next/router"
+import {
+  Container,
+  Grid,
+  Title,
+  Skeleton,
+  Image,
+  useMantineTheme,
+  Group,
+  Space,
+  Text,
+  Badge,
+  Button,
+  Modal,
+  Stack,
+} from "@mantine/core"
+import { ArrowLeft, Plus } from "tabler-icons-react"
+import { isEmpty } from "lodash"
+import CellarContainer from "../../components/Cellar/CellarContainer"
+import { useMediaQuery } from '@mantine/hooks'
 
-const WineRemover = styled.div`
-  // display: flex;
-  &:hover {
-    cursor: pointer;
-  }
-  div {
-    position: relative;
-    top: 115px;
-    left: 25px;
-    color: white;
-  }
-`
+const PRIMARY_COL_HEIGHT = 300
 
-const Property = ({ name, value }) => (
-  <Box direction="row-responsive" gap="small">
-    <Box width="small">
-      <Text>{name}</Text>
-    </Box>
-    <Text>
-      <strong>{value}</strong>
-    </Text>
-  </Box>
-)
-
+const WINE_COLUMNS_GROUPING = [
+  ["Producer"],
+  ["Country", "Region", "Appellation"],
+  ["Vintage", "DrinkDate"],
+  ["Color", "AlcoholPct", "Rating"],
+  ["Varietal"],
+]
+const RESTRICTED_WINE_COLUMNS_GROUPING = [["Location", "Price"]]
 const EXCLUDED_COLUMNS = ["Id", "ImageUrl", "Location", "Price"]
 const Wine = ({ wine }) => {
   const [currentWine, setCurrentWine] = useState(wine)
-  const [open, setOpen] = useState(false)
+  const [openRemovalDialog, setOpenRemovalDialog] = useState(false)
+  const [openCellarDialog, setOpenCellarDialog] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState(null)
+  const [selectedLocations, setSelectedLocations] = useState([])
+  const handleSelectLocation = (location) => {
+    if (selectedLocations.includes(location)) {
+      const selectedIndex = selectedLocations.indexOf(location)
+      setSelectedLocations([
+        ...selectedLocations.slice(0, selectedIndex),
+        ...selectedLocations.slice(selectedIndex + 1),
+      ])
+    } else {
+      setSelectedLocations([...selectedLocations, location])
+    }
+  }
+  const [emptyShelves, setEmptyShelves] = useState([])
   const router = useRouter()
-  const location = currentWine.Location.split("|").map((loc) => loc.trim())
+  const isMobile = useMediaQuery('(max-width: 600px)')
+  const location = (currentWine.Location || "")
+    .split("|")
+    .map((loc) => loc.trim())
   const onClose = () => setOpen(false)
   const onOpen = (loc) => () => {
     setSelectedLocation(loc)
-    setOpen(true)
+    setOpenRemovalDialog(true)
   }
 
   const handleRemoveWine = async () => {
-    console.log(`Removing ${selectedLocation}`)
-    const newValue = location.filter((loc) => loc !== selectedLocation)
-    console.log(`After removal: ${newValue}`)
-
     axios
-      .post("/api/updateWine", {
+      .post("/api/removeWineFromCellar", {
         id: wine.Id,
-        location: newValue,
+        location: selectedLocation,
       })
       .then((res) => {
-        console.log(`new wine is ${JSON.stringify(res)}`)
         setCurrentWine(res.data)
+        setOpenRemovalDialog(false)
+        setSelectedLocation(null)
       })
   }
-  const RemoveDialog = () => (
-    <Layer
-      id="remove-wine"
-      position="center"
-      onClickOutside={onClose}
-      onEsc={onClose}
-    >
-      <Box pad="medium" gap="small" width="medium">
-        <Heading level={3} margin="none">
-          Confirm
-        </Heading>
-        <Text>
-          This will remove wine from your inventory. Do you want to proceed?
-        </Text>
-        <Box
-          as="footer"
-          gap="small"
-          direction="row"
-          align="center"
-          justify="end"
-          pad={{ top: "medium", bottom: "small" }}
-        >
-          <Button label="No" onClick={onClose} color="dark-3" />
+  const handleAddWineToCellar = async () => {
+    axios
+      .post("/api/addWineToCellar", {
+        id: wine.Id,
+        locations: selectedLocations,
+      })
+      .then((res) => {
+        setCurrentWine(res.data)
+        setOpenCellarDialog(false)
+        setSelectedLocations([])
+      })
+  }
+  const getEmptyShelves = async () => {
+    axios
+      .get("/api/getEmptyShelves")
+      .then((res) => {
+        setEmptyShelves(res.data)
+      })
+  }
+  const Property = ({ name, value }) => (
+    <>
+      <Text size="sm" color="dimmed">
+        {name}
+      </Text>
+      {name === "Varietal" && (
+        <>
+          <Space h="sm" />
+          <Group>
+            {value.split("|").map((val) => (
+              <Badge key={val} size="lg">
+                {val}
+              </Badge>
+            ))}
+          </Group>
+        </>
+      )}
+      {name === "Location" && (
+        <>
+        <Space h="sm" />
+         <Group>
+          {(value || "").split("|").filter(val => !isEmpty(val)).map((val) => (
+            <Button
+              variant="outline"
+              key={`location-${val}`}
+              onClick={onOpen(val)}
+            >
+              {val}
+            </Button>
+          ))}
           <Button
-            label={
-              <Text color="white">
-                <strong>Yes</strong>
-              </Text>
-            }
-            onClick={() => {
-              handleRemoveWine()
-              onClose()
-            }}
-            primary
-            color="status-critical"
-          />
-        </Box>
-      </Box>
-    </Layer>
+              variant="outline"
+              leftIcon={<Plus size={16} />}
+              onClick={() => {
+                getEmptyShelves()
+                setOpenCellarDialog(true)
+              }}
+            >
+              Add
+            </Button>
+        </Group>
+        </>
+      )}
+      {name !== "Varietal" && name !== "Location" && (
+        <Text
+          size="xl"
+          sx={{ "&:empty:before": { content: `'empty'`, color: "white" } }}
+        >
+          {value}
+        </Text>
+      )}
+    </>
   )
+
+  const theme = useMantineTheme()
   return (
     <>
-      <Box pad="medium">
-        <Box
-          direction="row"
-          justify="between"
-          align="center"
-          gap="small"
-          style={{ marginBottom: "60px" }}
-        >
-          <Anchor icon={<Previous />} label="Back" href={null} gap="small" onClick={() => router.back()} />
-          <Heading style={{ textAlign: "end", width: "100%" }}>
-            {currentWine.Vintage} {currentWine.Name}
-          </Heading>
-        </Box>
-        <Box direction="row-responsive" gap="small">
-          <Box width="50%" align="center">
-            <img src={wine.ImageUrl} height={500} alt={`wine-pic-${wine.Id}`} />
-          </Box>
-
-          <Box gap="medium" margin={{ bottom: "large" }}>
-            {WINE_COLUMNS.filter(
-              (col) => !EXCLUDED_COLUMNS.includes(col.name)
-            ).map((col) => (
-              <Property
-                name={col.name}
-                value={
-                  col.transform
-                    ? col.transform(currentWine[col.name])
-                    : currentWine[col.name]
-                }
-                key={`column-${col}`}
-              />
+      <Modal
+        overlayColor={
+          theme.colorScheme === "dark"
+            ? theme.colors.dark[9]
+            : theme.colors.gray[2]
+        }
+        overlayOpacity={0.55}
+        overlayBlur={3}
+        opened={openRemovalDialog}
+        onClose={() => setOpenRemovalDialog(false)}
+        centered
+        title={
+          <Text size="md" color="pink" weight={700}>
+            Confirm wine retrieval
+          </Text>
+        }
+      >
+        Removing wine from location {selectedLocation}?
+        <Space h="xl" />
+        <Group position="right">
+          <Button onClick={handleRemoveWine}>Yes</Button>
+          <Button variant="outline" onClick={() => setOpenRemovalDialog(false)}>No</Button>
+        </Group>
+      </Modal>
+      <Modal
+      size="lg"
+      padding={isMobile ? "sm" : "xl"}
+        overlayColor={
+          theme.colorScheme === "dark"
+            ? theme.colors.dark[9]
+            : theme.colors.gray[2]
+        }
+        overlayOpacity={0.55}
+        overlayBlur={3}
+        opened={openCellarDialog}
+        onClose={() => setOpenCellarDialog(false)}
+        centered
+        title={
+          <Text size="md" color="pink" weight={700}>
+            Select the location to add this wine!
+          </Text>
+        }
+      >
+        <CellarContainer
+        isMobile={isMobile}
+        emptyShelves={emptyShelves}
+        selectedLocations={selectedLocations}
+        onSelectSpace={handleSelectLocation}
+        />
+        <Space h="xl" />
+        <Group position="right">
+          <Button onClick={handleAddWineToCellar}>Add</Button>
+          <Button variant="outline" onClick={() => setOpenCellarDialog(false)}>No</Button>
+        </Group>
+      </Modal>
+      <Container my="md">
+        <Grid>
+          <Grid.Col xs={4}>
+            <Button
+              color="pink"
+              variant="subtle"
+              onClick={() => router.back()}
+              leftIcon={<ArrowLeft size={32} />}
+            >
+              Back
+            </Button>
+            <Space h="xl" />
+            <Image
+              src={wine.ImageUrl}
+              alt={wine.Name}
+              height={500}
+              fit="contain"
+              withPlaceholder
+            />
+          </Grid.Col>
+          <Grid.Col xs={8}>
+            <Title order={1}>{currentWine.Name}</Title>
+            <Space h="xl" />
+            <Space h="md" />
+            {WINE_COLUMNS_GROUPING.map((group) => (
+              <Fragment key={`${group.join("#")}`}>
+                <Group spacing="xl" grow>
+                  {group.map((field) => {
+                    const column = WINE_COLUMNS.find(
+                      (col) => col.name === field
+                    )
+                    return (
+                      <Fragment key={`column-${field}`}>
+                        <Stack spacing={0}>
+                          <Property
+                            name={column.name}
+                            value={
+                              column.transform
+                                ? column.transform(currentWine[column.name])
+                                : currentWine[column.name]
+                            }
+                          />
+                        </Stack>
+                        <Space w="xl" />
+                      </Fragment>
+                    )
+                  })}
+                </Group>
+                <Space h="xl" />
+              </Fragment>
             ))}
             <AuthenticatedTemplate>
-              <Property
-                name="Price"
-                value={`$ ${currentWine["Price"].toFixed(2)}`}
-              />
+              {RESTRICTED_WINE_COLUMNS_GROUPING.map((group) => (
+                <Fragment key={`${group.join("#")}`}>
+                  <Group spacing="xl" grow align="flex-start">
+                    {group.map((field) => {
+                      const column = WINE_COLUMNS.find(
+                        (col) => col.name === field
+                      )
+                      return (
+                        <Fragment key={`column-${field}`}>
+                          <Stack spacing={0} justify="flex-start">
+                            <Property
+                              name={column.name}
+                              value={
+                                column.transform
+                                  ? column.transform(currentWine[column.name])
+                                  : currentWine[column.name]
+                              }
+                            />
+                          </Stack>
+                          <Space w="xl" />
+                        </Fragment>
+                      )
+                    })}
+                  </Group>
+                  <Space h="xl" />
+                </Fragment>
+              ))}
             </AuthenticatedTemplate>
-            <AuthenticatedTemplate>
-              <Box direction="row-responsive" gap="small">
-                <Box width="small">
-                  <Text>Location</Text>
-                </Box>
-                <Box direction="row-responsive">
-                  {location
-                    .map((loc) => loc.trim())
-                    .map((loc) => (
-                      <WineRemover
-                        onClick={onOpen(loc)}
-                        key={`wine-remover-${loc}`}
-                      >
-                        <div>{loc}</div>
-                        <img
-                          src="/bottle.png"
-                          width={70}
-                          alt={`wine-bottle-${loc}`}
-                        />
-                      </WineRemover>
-                    ))}
-                </Box>
-              </Box>
-            </AuthenticatedTemplate>
-          </Box>
-        </Box>
-        {open && <RemoveDialog />}
-      </Box>
+          </Grid.Col>
+        </Grid>
+      </Container>
     </>
   )
 }

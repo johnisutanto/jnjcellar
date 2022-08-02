@@ -1,202 +1,239 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
-  Box,
-  Button,
-  CheckBox,
-  Form,
-  FormField,
-  MaskedInput,
-  RadioButtonGroup,
-  RangeInput,
-  Select,
-  TextArea,
   TextInput,
-} from "grommet"
+  NumberInput,
+  Container,
+  Grid,
+  Select,
+  MultiSelect,
+  Button,
+  Title,
+  Center,
+  Space,
+} from "@mantine/core"
 import { getWineFilters } from "../../utils/connectDb"
-import DropDown from "../../components/DropDown"
+import { CurrencyDollar, Percentage } from "tabler-icons-react"
+import { useForm } from "@mantine/form"
+import { isEmpty } from "lodash"
+import { WineColors } from "../../shared/common"
+import axios from "axios"
 
 export default function AddWine({ filters }) {
   const [countryOptions, setCountryOptions] = useState(filters.countries)
   const [regionOptions, setRegionOptions] = useState(filters.regions)
   const [producerOptions, setProducerOptions] = useState(filters.producers)
-  const [appellationOptions, setAppellationOptions] = useState(filters.appellations)
+  const [appellationOptions, setAppellationOptions] = useState(
+    filters.appellations
+  )
   const [varietalOptions, setVarietalOptions] = useState(filters.varietals)
 
-  const [name, setName] = useState("")
-  const [country, setCountry] = useState("")
-  const [region, setRegion] = useState("")
-  const [producer, setProducer] = useState("")
-  const [appellation, setAppellation] = useState("")
-  const [vintage, setVintage] = useState("")
-  const [color, setColor] = useState("")
-  const [location, setLocation] = useState("")
-  const [price, setPrice] = useState("")
-  const [imageUrl, setImageUrl] = useState("")
-  const [alcoholPct, setAlcoholPct] = useState("")
-  const [rating, setRating] = useState("")
-  const [varietal, setVarietal] = useState([])
-
-  useEffect(() => {
-    console.log(`the value of countryOptions ${countryOptions}`)
-  }, [countryOptions])
-
+  const form = useForm({
+    initialValues: {
+      name: "",
+      country: "",
+      region: "",
+      producer: "",
+      appellation: "",
+      vintage: "",
+      color: -1,
+      location: "",
+      price: "",
+      imageUrl: "",
+      alcoholPct: "",
+      rating: "",
+      varietal: [],
+    },
+    validate: {
+      varietal: (value) => !isEmpty(value) ? null : "Select at least one varietal",
+      color: (value) => value >=0 && value <= 2 ? null : "Select wine color",
+    },
+  })
+  const handleAddWine = async (newWine) => {
+    axios
+      .post("/api/addWine", {
+        data: {
+          ...newWine,
+          varietal: form.values.varietal.join("|"),
+        }
+      })
+      .then((res) => {
+        console.log(`new wine is ${JSON.stringify(res)}`)
+      })
+  }
   return (
-    <Box fill="horizontal" align="center" justify="center">
-      <Box width="large">
-        <Form
-          autocomplete="off"
-          onChange={(value) => console.log("Change", value)}
-          onReset={() => {
-            setName("")
-            setCountry("")
-            setRegion("")
-            setProducer("")
-            setColor("")
-            setAppellation("")
-            setVintage("")
-          }}
-          onSubmit={(event) =>
-            console.log("Submit", event.value, event.touched)
-          }
-        >
-          <FormField label="Name" name="name">
+    <form
+      autoComplete="off"
+      role="presentation"
+      autoCorrect="off"
+      spellCheck="false"
+      onSubmit={form.onSubmit((values) => handleAddWine(values))}
+    >
+      <Space h="xl" />
+      <Center>
+      <Title order={2}>Add a new wine</Title>
+      </Center>
+      <Container my="md">
+        <Grid>
+          <Grid.Col xs={8}>
             <TextInput
-              name="name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              autocomplete="off"
+              label="Name"
+              {...form.getInputProps("name")}
+              required
+            />
+          </Grid.Col>
+          <Grid.Col xs={4}>
+            <Select
+              id="select-color"
+              name="select-color"
+              placeholder="Color"
+              label="Color"
+              data={WineColors}
+              {...form.getInputProps("color")}
+              required
+            />
+          </Grid.Col>
+          <Grid.Col xs={6}>
+            <Select
+              id="select-country"
+              name="select-country"
+              placeholder="Country"
+              label="Country"
+              data={countryOptions}
+              searchable
+              creatable
+              onCreate={(query) => {
+                setCountryOptions((current) => [...current, query])
+                form.setFieldValue("country", query)
+              }}
+              getCreateLabel={(query) => `+ Create ${query}`}
               role="presentation"
+              autoCorrect="off"
+              spellCheck="false"
+              {...form.getInputProps("country")}
+              required
             />
-          </FormField>
-          <FormField label="Country" name="country">
-            <DropDown
-              options={countryOptions}
-              selectedOption={country}
-              onSelect={(value, isNew) => {
-                if (isNew) {
-                  setCountryOptions([...countryOptions.slice(0, countryOptions.length - 1), value])
-                }
-                setCountry(value); 
+          </Grid.Col>
+          <Grid.Col xs={6}>
+            <Select
+              id="select-region"
+              name="select-region"
+              placeholder="Region"
+              label="Region"
+              data={regionOptions}
+              searchable
+              creatable
+              onCreate={(query) => {
+                setRegionOptions((current) => [...current, query])
+                form.setFieldValue("region", query)
               }}
+              getCreateLabel={(query) => `+ Create ${query}`}
+              role="presentation"
+              autoCorrect="off"
+              spellCheck="false"
+              {...form.getInputProps("region")}
+              required
             />
-          </FormField>
-          <FormField label="Region" name="region">
-            <DropDown
-              options={regionOptions}
-              selectedOption={region}
-              onSelect={(value, isNew) => {
-                if (isNew) {
-                  setRegionOptions([...regionOptions.slice(0, regionOptions.length - 1), value])
-                }
-                setRegion(value); 
+          </Grid.Col>
+          <Grid.Col xs={6}>
+            <Select
+              id="select-producer"
+              name="select-producer"
+              placeholder="Producer"
+              label="Producer"
+              data={producerOptions}
+              searchable
+              creatable
+              onCreate={(query) => {
+                setProducerOptions((current) => [...current, query])
+                form.setFieldValue("producer", query)
               }}
+              getCreateLabel={(query) => `+ Create ${query}`}
+              {...form.getInputProps("producer")}
+              required
             />
-          </FormField>
-          <FormField label="Producer" name="producer">
-            <DropDown
-              options={producerOptions}
-              selectedOption={producer}
-              onSelect={(value, isNew) => {
-                if (isNew) {
-                  setRegionOptions([...producerOptions.slice(0, producerOptions.length - 1), value])
-                }
-                setProducer(value); 
+          </Grid.Col>
+          <Grid.Col xs={6}>
+            <Select
+              id="select-appellation"
+              name="select-appellation"
+              placeholder="Appellation"
+              label="Appelation"
+              data={appellationOptions}
+              onCreate={(query) => {
+                setAppellationOptions((current) => [...current, query])
+                form.setFieldValue("appellation", query)
               }}
+              getCreateLabel={(query) => `+ Create ${query}`}
+              searchable
+              creatable
+              {...form.getInputProps("appellation")}
+              required
             />
-          </FormField>
-          <FormField label="Appellation" name="appellation">
-            <DropDown
-              options={appellationOptions}
-              selectedOption={appellation}
-              onSelect={(value, isNew) => {
-                if (isNew) {
-                  setAppellationOptions([...appellationOptions.slice(0, appellationOptions.length - 1), value])
-                }
-                setAppellation(value); 
+          </Grid.Col>
+          <Grid.Col xs={8}>
+            <MultiSelect
+              label="Varietal"
+              data={varietalOptions}
+              placeholder="Varietal"
+              searchable
+              creatable
+              getCreateLabel={(query) => `+ Create ${query}`}
+              onCreate={(query) => {
+                setVarietalOptions((current) => [...current, query])
+                form.setFieldValue("varietal", [...form.values.varietal, query])
               }}
+              {...form.getInputProps("varietal")}
+              required
             />
-          </FormField>
-          <FormField label="Vintage" name="vintage">
-            <TextInput
-              name="vintage"
-              value={vintage}
-              onChange={(event) => setVintage(event.target.value)}
-              autocomplete="off"
+          </Grid.Col>
+          <Grid.Col xs={4}>
+            <NumberInput
+              label="Vintage"
+              {...form.getInputProps("vintage")}
+              required
+              min={1990}
+              max={new Date().getFullYear()}
+              hideControls
             />
-          </FormField>
-          <FormField name="color" label="Color">
-            <RadioButtonGroup
-              name="color"
-              options={["Red", "White", "Rose"]}
-              value={color}
-              onChange={(event) => setColor(event.target.value)}
+          </Grid.Col>
+          <Grid.Col xs={4}>
+            <NumberInput
+              label="Price"
+              {...form.getInputProps("price")}
+              icon={<CurrencyDollar size={16} />}
+              hideControls
             />
-          </FormField>
-          <FormField label="Varietal" name="varietal" size="small">
-            <DropDown
-              options={varietalOptions}
-              selectedOption={varietal}
-              multiple={true}
-              onSelect={(value, isNew) => {
-                if (isNew) {
-                  setVarietalOptions([...varietalOptions.slice(0, varietalOptions.length - 1), value])
-                }
-                setVarietal(value); 
-              }}
+          </Grid.Col>
+          <Grid.Col xs={4}>
+            <NumberInput
+              label="Alcohol"
+              {...form.getInputProps("alcoholPct")}
+              rightSection={<Percentage size={16} />}
+              min={0}
+              max={100}
+              hideControls
             />
-          </FormField>
-          <FormField label="Price" name="price">
-            <TextInput
-              name="price"
-              value={price}
-              onChange={(event) => setPrice(event.target.value)}
-              autocomplete="off"
+          </Grid.Col>
+          <Grid.Col xs={4}>
+            <NumberInput
+              label="Rating"
+              {...form.getInputProps("rating")}
+              min={0}
+              max={100}
+              hideControls
             />
-          </FormField>
-          <FormField label="Alcohol %" name="alcoholPct">
-            <TextInput
-              name="alcoholPct"
-              value={alcoholPct}
-              onChange={(event) => setAlcoholPct(event.target.value)}
-              autocomplete="off"
-            />
-          </FormField>
-          <FormField label="Rating" name="rating">
-            <TextInput
-              name="rating"
-              value={rating}
-              onChange={(event) => setRating(event.target.value)}
-              autocomplete="off"
-            />
-          </FormField>
-          <FormField label="Location" name="location">
-            <TextInput
-              name="location"
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              autocomplete="off"
-            />
-          </FormField>
-          <FormField label="Image URL" name="imageUrl">
-            <TextInput
-              name="imageUrl"
-              value={imageUrl}
-              onChange={(event) => setImageUrl(event.target.value)}
-              autocomplete="off"
-            />
-          </FormField>
-          <Box direction="row" justify="between" margin={{ top: "medium" }}>
-            <Button label="Cancel" />
-            <Button type="reset" label="Reset" />
-            <Button type="submit" label="Add" primary />
-          </Box>
-        </Form>
-      </Box>
-    </Box>
+          </Grid.Col>
+        </Grid>
+      </Container>
+      <Space h="xl" />
+      <Container my="md">
+        <Center>
+          <Button type="submit">Submit</Button>
+        </Center>
+      </Container>
+    </form>
   )
 }
-
-
 
 export async function getServerSideProps(context) {
   const filters = await getWineFilters()
@@ -205,4 +242,3 @@ export async function getServerSideProps(context) {
     props: { filters },
   }
 }
-
