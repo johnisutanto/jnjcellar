@@ -21,12 +21,16 @@ import JnjLogo from "../shared/JnjLogo"
 
 const useStyles = createStyles((theme) => ({
   navbar: {
+    [theme.fn.smallerThan("sm")]: {
+      backgroundColor: "#58181F",
+    },
     [theme.fn.largerThan("sm")]: {
       display: "none",
     },
   },
 
   links: {
+    
     fontWeight: 600,
     [theme.fn.smallerThan("sm")]: {
       display: "none",
@@ -38,10 +42,16 @@ const useStyles = createStyles((theme) => ({
 
   navbarLinks: {
     [theme.fn.smallerThan("sm")]: {
-      color: "black",
+      color: "white",
+      display: "flex",
+      alignSelf: "center",
+      fontSize: 20,
       "&:hover": {
-        color: "black",
+        color: theme.colors.gray[1],
       },
+      "&:first-of-type": {
+        marginTop: 30,
+      }
     },
     [theme.fn.largerThan("sm")]: {
       color: theme.colors.gray[0],
@@ -57,21 +67,23 @@ export default function AppWrapper(props) {
   const [opened, setOpened] = useState(false)
   const { instance } = useMsal()
   const AppBody = props.AppBody
-
+  const createLink = (label) => (
+    <Anchor className={classes.navbarLinks} onClick={() => setOpened(false)}>{label}</Anchor>
+  )
   const renderHeaderLinks = () => (
     <>
       <JnjLogo height={30} color="white" />
       <Space w="lg" />
       <Link href="/" passHref>
-        <Anchor className={classes.navbarLinks}>Home</Anchor>
+        {createLink("Home")}
       </Link>
       <Space w="md" />
       <Link href="/cellars" passHref>
-        <Anchor className={classes.navbarLinks}>Our Wines</Anchor>
+        {createLink("Our Wines")}
       </Link>
       <Space w="md" />
       <Link href="/aboutus" passHref>
-        <Anchor className={classes.navbarLinks}>About Us</Anchor>
+        {createLink("About Us")}
       </Link>
       <Space w="md" />
       <UnauthenticatedTemplate>
