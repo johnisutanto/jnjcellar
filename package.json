@@ -13,8 +13,6 @@
     "@mantine/form": "^5.0.0",
     "@mantine/next": "^5.0.0",
     "axios": "^0.27.2",
-    "grommet": "^2.24.0",
-    "grommet-icons": "^4.7.0",
     "net": "^1.0.2",
     "next": "^12.2.3",
     "react": "^18.2.0",

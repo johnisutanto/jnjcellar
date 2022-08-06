@@ -1,7 +1,6 @@
 import React, { Fragment, useState } from "react"
 import { getWine } from "../../utils/connectDb"
 import { WINE_COLUMNS } from "../../model/wine"
-import styled from "styled-components"
 import axios from "axios"
 import { AuthenticatedTemplate } from "@azure/msal-react"
 import { useRouter } from "next/router"
@@ -9,7 +8,6 @@ import {
   Container,
   Grid,
   Title,
-  Skeleton,
   Image,
   useMantineTheme,
   Group,
@@ -24,8 +22,6 @@ import { ArrowLeft, Plus } from "tabler-icons-react"
 import { isEmpty } from "lodash"
 import CellarContainer from "../../components/Cellar/CellarContainer"
 import { useMediaQuery } from '@mantine/hooks'
-
-const PRIMARY_COL_HEIGHT = 300
 
 const WINE_COLUMNS_GROUPING = [
   ["Producer"],

@@ -1,5 +1,4 @@
 import { getWines, getWineFilters } from "../../utils/connectDb"
-import { Box, Grid } from "grommet"
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import axios from "axios"
@@ -7,6 +6,7 @@ import useQueryState from "../../utils/useQueryState"
 import usePrevious from "../../utils/usePrevious"
 import { isEqual, isNil } from "lodash"
 import {
+  Box,
   Card,
   Image,
   Text,
@@ -18,6 +18,7 @@ import {
   Select,
   Container,
   Badge,
+  Grid,
 } from "@mantine/core"
 import { AuthenticatedTemplate } from "@azure/msal-react"
 
@@ -163,56 +164,61 @@ export default function Home({ wines, filters }) {
           </Group>
         </Center>
       </Container>
-      <Box pad="large" fill>
-        <Grid columns={isMobile ? "100%" : "small"} gap="large">
+      <Space h="xl" />
+      <Space h="xl" />
+      <Container fluid px="xl">
+        <Grid>
           {(currentWines || []).map((wine, index) => (
-            <Link
-              href={`/wine/${wine.Id}`}
-              key={`card-wine-${wine.Id}`}
-              passHref
-            >
-              <Card p="lg" component="a" radius="md" withBorder>
-                <Card.Section>
-                  <div className={classes.rating}>
-                    <Badge
+            <Grid.Col sm={6} md={4} xl={2} lg={3} key={`card-wine-${wine.Id}`}>
+              <Link href={`/wine/${wine.Id}`} passHref>
+                <Card p="lg" component="a" radius="md" withBorder>
+                  <Card.Section>
+                    <div className={classes.rating}>
+                      <Badge
+                        size="lg"
+                        radius="md"
+                        color="white"
+                        variant="outline"
+                      >
+                        {wine.Rating}
+                      </Badge>
+                    </div>
+                    <div className={classes.bottleCount}>
+                      <AuthenticatedTemplate>
+                        Qty: {wine.BottleCount || 0}
+                      </AuthenticatedTemplate>
+                    </div>
+                    <Image
+                      src={wine.ImageUrl}
+                      alt={wine.Name}
+                      height={150}
+                      fit="contain"
+                      withPlaceholder
+                      sx={{ paddingTop: 48 }}
+                    />
+                  </Card.Section>
+                  <Space h="md" />
+                  <Box sx={{ height: 50 }}>
+                    <Text
                       size="lg"
-                      radius="md"
-                      color="white"
-                      variant="outline"
+                      align="center"
+                      sx={(theme) => ({
+                        color: theme.colors.pink[9],
+                        lineHeight: "20px",
+                      })}
                     >
-                      {wine.Rating}
-                    </Badge>
-                  </div>
-                  <div className={classes.bottleCount}>
-                    <AuthenticatedTemplate>
-                      Qty: {wine.BottleCount || 0}
-                    </AuthenticatedTemplate>
-                  </div>
-                  <Image
-                    src={wine.ImageUrl}
-                    alt={wine.Name}
-                    height={150}
-                    fit="contain"
-                    withPlaceholder
-                    sx={{ paddingTop: 48 }}
-                  />
-                </Card.Section>
-                <Space h="md" />
-                <Text
-                  size="lg"
-                  align="center"
-                  sx={(theme) => ({ color: theme.colors.pink[9] })}
-                >
-                  {wine.Name}
-                </Text>
-                <Text size="sm" align="center">
-                  {wine.Producer}
-                </Text>
-                <Text size="xs" align="center">
-                  {wine.Vintage} | {wine.Country}
-                </Text>
-              </Card>
-            </Link>
+                      {wine.Name}
+                    </Text>
+                  </Box>
+                  <Text size="sm" align="center" lineClamp={1}>
+                    {wine.Producer}
+                  </Text>
+                  <Text size="xs" align="center">
+                    {wine.Vintage} | {wine.Country}
+                  </Text>
+                </Card>
+              </Link>
+            </Grid.Col>
           ))}
         </Grid>
         <Space h="xl" />
@@ -224,7 +230,7 @@ export default function Home({ wines, filters }) {
             total={totalPage}
           />
         </Center>
-      </Box>
+      </Container>
     </>
   )
 }
