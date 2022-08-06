@@ -67,16 +67,16 @@ export const getWines = (queries) =>
     `
     console.log(`select string ${selectString}`)
     const request = new Request(selectString, (err) => {
+      connection.close()
       if (err) {
         reject(err)
       } else {
-        if (result == "" || result == null || result == "null") result = "[]"
+        if (result == "" || result == null || result == "null") result = []
         resolve({
           results: result,
           totalCount,
         })
       }
-      connection.close()
     })
 
     request.on("row", (columns) => {
@@ -116,6 +116,7 @@ export const getWine = (id) =>
       from Wine w WHERE w.Id = ${id}
       `,
       (err) => {
+        connection.close()
         if (err) {
           reject(err)
         } else {
@@ -172,6 +173,7 @@ export const insertWine = (wine) =>
     console.log(`SQL String = ${sqlString}`)
 
     const request = new Request(sqlString, (err) => {
+      connection.close()
       if (err) {
         reject(err)
       } else {
@@ -222,13 +224,13 @@ export const updateWine = (id, value) =>
     const sqlString = `UPDATE Wine SET Location = @Location WHERE Id = ${id}`
     console.log(`SQL String = ${sqlString}`)
     const request = new Request(sqlString, (err) => {
+      connection.close()
       if (err) {
         reject(err)
       } else {
         if (result == "" || result == null || result == "null") result = null
         resolve(result)
       }
-      connection.close()
     })
     console.log(`updating location to ${value}`)
     request.addParameter("Location", TYPES.NVarChar, value)
@@ -252,6 +254,7 @@ export const getFilters = (column) =>
     const request = new Request(
       `SELECT DISTINCT ${column} FROM Wine`,
       (err) => {
+        connection.close()
         if (err) {
           reject(err)
         } else {
@@ -282,6 +285,7 @@ export const getWineFilters = () =>
 
     const connection = getConnection()
     const request = new Request(`[dbo].[RetrieveWineFilters]`, (err) => {
+      connection.close()
       if (err) {
         reject(err)
       } else {
@@ -322,6 +326,7 @@ export const getBottleCounts = (column) =>
       FROM Wine
       CROSS APPLY STRING_SPLIT(Location, '|')) mywine`,
       (err) => {
+        connection.close()
         if (err) {
           reject(err)
         } else {
@@ -354,6 +359,7 @@ export const getEmptyShelves = () =>
     const request = new Request(
       `SELECT Location FROM Cellar WHERE CellarId = 'STAIRCASE' AND WineId IS NULL`,
       (err) => {
+        connection.close()
         if (err) {
           reject(err)
         } else {
@@ -385,6 +391,7 @@ export const addWineToCellar = (id, locations) =>
     const locationsStr = locations.join(",")
     const connection = getConnection()
     const request = new Request(`[dbo].[AddBottleToCellar]`, (err) => {
+      connection.close()
       if (err) {
         reject(err)
       } else {
@@ -412,6 +419,7 @@ export const removeWineFromCellar = (id, location) =>
 
     const connection = getConnection()
     const request = new Request(`[dbo].[RemoveBottleFromCellar]`, (err) => {
+      connection.close()
       if (err) {
         reject(err)
       } else {

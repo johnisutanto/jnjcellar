@@ -9,10 +9,6 @@ body {
 * {
   box-sizing: border-box;
 }
-@font-face {
-  font-family: GermanFont;
-  src: url(public/AlteSchwabacherOSF-DemiBold.ttf);
-}
 
 .global-header {
   display: flex;
