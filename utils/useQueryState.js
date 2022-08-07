@@ -59,6 +59,10 @@ function clearEmptyValues(obj) {
   )
 }
 
+export function toCleanQueryString(obj) {
+  return new URLSearchParams(clearEmptyValues(obj)).toString()
+}
+
 function isUpToDate(query, state, route) {
   return (
     toQueryString(
@@ -85,7 +89,7 @@ export default function useQueryState(defaultState) {
     push(
       {
         pathname: new URL(asPath, "http://localhost/").pathname,
-        query: { ...filterRouteParams(query, route), ...state },
+        query: clearEmptyValues({ ...filterRouteParams(query, route), ...state }),
       },
       undefined,
       {

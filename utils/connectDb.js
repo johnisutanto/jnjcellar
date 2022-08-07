@@ -39,9 +39,9 @@ export const getWines = (queries) =>
 
     const connection = getConnection()
     const allColumns = WINE_COLUMNS.map((col) => col.name).join(",")
-    const page = queries?.page || 0
+    const { page, ...params } = queries
     const offset = page * PAGE_SIZE
-    let whereClauses = Object.entries(queries?.q || {})
+    let whereClauses = Object.entries(params || {})
       .map(([key, value]) => {
         if (partialMatchColumns.includes(key)) {
           return `${key} LIKE '%${value.substring(1, value.length - 1)}%'`

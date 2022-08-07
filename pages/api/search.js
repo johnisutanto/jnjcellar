@@ -1,8 +1,7 @@
 import { getWines } from "../../utils/connectDb";
 
 export default async function handler(req, res) {
-  console.log(`${JSON.stringify(req.body)}`);
-  const queries = req.body
+  const queries = req.query
   const wines = await getWines(queries)
   res.send(wines)
 }

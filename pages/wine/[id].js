@@ -1,5 +1,4 @@
-import React, { Fragment, useState } from "react"
-import { getWine } from "../../utils/connectDb"
+import React, { Fragment, useEffect, useState } from "react"
 import { WINE_COLUMNS } from "../../model/wine"
 import axios from "axios"
 import { AuthenticatedTemplate } from "@azure/msal-react"
@@ -17,11 +16,13 @@ import {
   Button,
   Modal,
   Stack,
+  LoadingOverlay,
 } from "@mantine/core"
 import { ArrowLeft, Plus } from "tabler-icons-react"
 import { isEmpty } from "lodash"
 import CellarContainer from "../../components/Cellar/CellarContainer"
-import { useMediaQuery } from '@mantine/hooks'
+import { useMediaQuery } from "@mantine/hooks"
+import useSWR from "swr"
 
 const WINE_COLUMNS_GROUPING = [
   ["Producer"],
@@ -32,8 +33,17 @@ const WINE_COLUMNS_GROUPING = [
 ]
 const RESTRICTED_WINE_COLUMNS_GROUPING = [["Location", "Price"]]
 const EXCLUDED_COLUMNS = ["Id", "ImageUrl", "Location", "Price"]
-const Wine = ({ wine }) => {
-  const [currentWine, setCurrentWine] = useState(wine)
+const fetcher = (...args) => fetch(...args).then((res) => res.json())
+const Wine = () => {
+  const router = useRouter()
+  const { id } = router.query
+  const { data: wine, error } = useSWR(id ? `/api/wine/${id}` : null, fetcher)
+  const [currentWine, setCurrentWine] = useState(null)
+
+  useEffect(() => {
+    setCurrentWine(wine)
+  }, [wine])
+
   const [openRemovalDialog, setOpenRemovalDialog] = useState(false)
   const [openCellarDialog, setOpenCellarDialog] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState(null)
@@ -50,12 +60,7 @@ const Wine = ({ wine }) => {
     }
   }
   const [emptyShelves, setEmptyShelves] = useState([])
-  const router = useRouter()
-  const isMobile = useMediaQuery('(max-width: 600px)')
-  const location = (currentWine.Location || "")
-    .split("|")
-    .map((loc) => loc.trim())
-  const onClose = () => setOpen(false)
+  const isMobile = useMediaQuery("(max-width: 600px)")
   const onOpen = (loc) => () => {
     setSelectedLocation(loc)
     setOpenRemovalDialog(true)
@@ -86,11 +91,9 @@ const Wine = ({ wine }) => {
       })
   }
   const getEmptyShelves = async () => {
-    axios
-      .get("/api/getEmptyShelves")
-      .then((res) => {
-        setEmptyShelves(res.data)
-      })
+    axios.get("/api/getEmptyShelves").then((res) => {
+      setEmptyShelves(res.data)
+    })
   }
   const Property = ({ name, value }) => (
     <>
@@ -111,18 +114,21 @@ const Wine = ({ wine }) => {
       )}
       {name === "Location" && (
         <>
-        <Space h="sm" />
-         <Group>
-          {(value || "").split("|").filter(val => !isEmpty(val)).map((val) => (
+          <Space h="sm" />
+          <Group>
+            {(value || "")
+              .split("|")
+              .filter((val) => !isEmpty(val))
+              .map((val) => (
+                <Button
+                  variant="outline"
+                  key={`location-${val}`}
+                  onClick={onOpen(val)}
+                >
+                  {val}
+                </Button>
+              ))}
             <Button
-              variant="outline"
-              key={`location-${val}`}
-              onClick={onOpen(val)}
-            >
-              {val}
-            </Button>
-          ))}
-          <Button
               variant="outline"
               leftIcon={<Plus size={16} />}
               onClick={() => {
@@ -132,7 +138,7 @@ const Wine = ({ wine }) => {
             >
               Add
             </Button>
-        </Group>
+          </Group>
         </>
       )}
       {name !== "Varietal" && name !== "Location" && (
@@ -147,6 +153,10 @@ const Wine = ({ wine }) => {
   )
 
   const theme = useMantineTheme()
+  if (!wine || !currentWine) {
+    return <LoadingOverlay visible={true} overlayBlur={2} />
+  }
+
   return (
     <>
       <Modal
@@ -170,12 +180,14 @@ const Wine = ({ wine }) => {
         <Space h="xl" />
         <Group position="right">
           <Button onClick={handleRemoveWine}>Yes</Button>
-          <Button variant="outline" onClick={() => setOpenRemovalDialog(false)}>No</Button>
+          <Button variant="outline" onClick={() => setOpenRemovalDialog(false)}>
+            No
+          </Button>
         </Group>
       </Modal>
       <Modal
-      size="lg"
-      padding={isMobile ? "sm" : "xl"}
+        size="lg"
+        padding={isMobile ? "sm" : "xl"}
         overlayColor={
           theme.colorScheme === "dark"
             ? theme.colors.dark[9]
@@ -193,15 +205,17 @@ const Wine = ({ wine }) => {
         }
       >
         <CellarContainer
-        isMobile={isMobile}
-        emptyShelves={emptyShelves}
-        selectedLocations={selectedLocations}
-        onSelectSpace={handleSelectLocation}
+          isMobile={isMobile}
+          emptyShelves={emptyShelves}
+          selectedLocations={selectedLocations}
+          onSelectSpace={handleSelectLocation}
         />
         <Space h="xl" />
         <Group position="right">
           <Button onClick={handleAddWineToCellar}>Add</Button>
-          <Button variant="outline" onClick={() => setOpenCellarDialog(false)}>No</Button>
+          <Button variant="outline" onClick={() => setOpenCellarDialog(false)}>
+            No
+          </Button>
         </Group>
       </Modal>
       <Container my="md">
@@ -289,15 +303,6 @@ const Wine = ({ wine }) => {
       </Container>
     </>
   )
-}
-
-export async function getServerSideProps(context) {
-  const id = context.params.id
-  const wine = await getWine(id)
-
-  return {
-    props: { wine },
-  }
 }
 
 export default Wine
