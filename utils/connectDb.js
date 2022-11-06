@@ -79,6 +79,11 @@ export const getWines = (queries) =>
       }
     })
 
+    request.on("columnMetadata", (columns) => {
+      const cols = columns.map(col => col.colName)
+      console.log(`columnMetadata ${JSON.stringify(cols)}`)
+    })
+
     request.on("row", (columns) => {
       const wineResult = WINE_COLUMNS.reduce(
         (acc, col, index) => ({
@@ -165,6 +170,7 @@ export const insertWine = (wine) =>
       "Price",
       "AlcoholPct",
       "Rating",
+      "DrinkDate",
     ]
     const allSqlColumns = WINE_COLUMNS.map((col) => col.sqlName).slice(1)
     const sqlString = `INSERT INTO Wine (${requiredColumns.join(

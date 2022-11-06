@@ -214,7 +214,7 @@ const Wine = () => {
         <Group position="right">
           <Button onClick={handleAddWineToCellar}>Add</Button>
           <Button variant="outline" onClick={() => setOpenCellarDialog(false)}>
-            No
+            Cancel
           </Button>
         </Group>
       </Modal>

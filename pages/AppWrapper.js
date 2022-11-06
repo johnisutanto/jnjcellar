@@ -67,24 +67,18 @@ export default function AppWrapper(props) {
   const [opened, setOpened] = useState(false)
   const { instance } = useMsal()
   const AppBody = props.AppBody
-  const createLink = (label) => (
-    <Anchor className={classes.navbarLinks} onClick={() => setOpened(false)}>{label}</Anchor>
+  const createLink = (label, href) => (
+    <Anchor href={href} component={Link} className={classes.navbarLinks} onClick={() => setOpened(false)}>{label}</Anchor>
   )
   const renderHeaderLinks = () => (
     <>
       <JnjLogo height={30} color="white" />
       <Space w="lg" />
-      <Link href="/" passHref>
-        {createLink("Home")}
-      </Link>
+      {createLink("Home", "/")}
       <Space w="md" />
-      <Link href="/cellars" passHref>
-        {createLink("Our Wines")}
-      </Link>
+      {createLink("Our Wines", "/cellars")}
       <Space w="md" />
-      <Link href="/aboutus" passHref>
-        {createLink("About Us")}
-      </Link>
+      {createLink("About Us", "/aboutus")}
       <Space w="md" />
       <UnauthenticatedTemplate>
         <Anchor
@@ -95,9 +89,7 @@ export default function AppWrapper(props) {
         </Anchor>
       </UnauthenticatedTemplate>
       <AuthenticatedTemplate>
-        <Link href="/add" passHref>
-          <Anchor className={classes.navbarLinks}>Add Wine</Anchor>
-        </Link>
+        <Anchor href="/add" className={classes.navbarLinks}>Add Wine</Anchor>
         <Space w="md" />
         <Anchor
           className={classes.navbarLinks}

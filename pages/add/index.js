@@ -10,13 +10,20 @@ import {
   Title,
   Center,
   Space,
+  Modal,
+  Group,
+  Text,
+  InputBase,
+  useMantineTheme,
 } from "@mantine/core"
+import InputMask from "react-input-mask"
 import { getWineFilters } from "../../utils/connectDb"
 import { CurrencyDollar, Percentage } from "tabler-icons-react"
 import { useForm } from "@mantine/form"
 import { isEmpty } from "lodash"
 import { WineColors } from "../../shared/common"
 import axios from "axios"
+import { useRouter } from "next/router"
 
 export default function AddWine({ filters }) {
   const [countryOptions, setCountryOptions] = useState(filters.countries)
@@ -26,6 +33,9 @@ export default function AddWine({ filters }) {
     filters.appellations
   )
   const [varietalOptions, setVarietalOptions] = useState(filters.varietals)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const theme = useMantineTheme()
+  const router = useRouter()
 
   const form = useForm({
     initialValues: {
@@ -42,6 +52,7 @@ export default function AddWine({ filters }) {
       alcoholPct: "",
       rating: "",
       varietal: [],
+      drinkDate: "",
     },
     validate: {
       varietal: (value) => !isEmpty(value) ? null : "Select at least one varietal",
@@ -58,10 +69,36 @@ export default function AddWine({ filters }) {
       })
       .then((res) => {
         console.log(`new wine is ${JSON.stringify(res)}`)
+        setShowSuccessModal(true)
       })
   }
   return (
-    <form
+    <>
+    <Modal
+        overlayColor={
+          theme.colorScheme === "dark"
+            ? theme.colors.dark[9]
+            : theme.colors.gray[2]
+        }
+        overlayOpacity={0.55}
+        overlayBlur={3}
+        opened={showSuccessModal}
+        withCloseButton={false}
+        closeOnClickOutside={false}
+        centered
+        title={
+          <Text size="md" color="pink" weight={700}>
+            Yay!!!!
+          </Text>
+        }
+      >
+        Wine has been added successfully
+        <Space h="xl" />
+        <Group position="right">
+          <Button onClick={() => router.push("/cellars")}>OK</Button>
+        </Group>
+      </Modal>
+      <form
       autoComplete="off"
       role="presentation"
       autoCorrect="off"
@@ -223,6 +260,15 @@ export default function AddWine({ filters }) {
               hideControls
             />
           </Grid.Col>
+          <Grid.Col xs={4}>
+            <InputBase
+              label="Drink Date"
+              {...form.getInputProps("drinkDate")}
+              placeholder="Drink date range"
+              component={InputMask}
+              mask="9999 - 9999"
+            />
+          </Grid.Col>
         </Grid>
       </Container>
       <Space h="xl" />
@@ -232,6 +278,7 @@ export default function AddWine({ filters }) {
         </Center>
       </Container>
     </form>
+    </>
   )
 }
 
