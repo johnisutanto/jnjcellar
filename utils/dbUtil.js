@@ -10,5 +10,6 @@ export const getDbConfig = () => ({
   options: {
     database: process.env.DB_NAME,
     encrypt: true,
+    trustServerCertificate: true,
   },
 })

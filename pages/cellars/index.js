@@ -149,54 +149,58 @@ export default function Home() {
         <Grid>
           {(currentWines || []).map((wine, index) => (
             <Grid.Col sm={6} md={4} xl={2} lg={3} key={`card-wine-${wine.Id}`}>
-              <Link href={`/wine/${wine.Id}`} passHref>
-                <Card p="lg" component="a" radius="md" withBorder>
-                  <Card.Section>
-                    <div className={classes.rating}>
-                      <Badge
-                        size="lg"
-                        radius="md"
-                        color="white"
-                        variant="outline"
-                      >
-                        {wine.Rating}
-                      </Badge>
-                    </div>
-                    <div className={classes.bottleCount}>
-                      <AuthenticatedTemplate>
-                        Qty: {wine.BottleCount || 0}
-                      </AuthenticatedTemplate>
-                    </div>
-                    <Image
-                      src={wine.ImageUrl}
-                      alt={wine.Name}
-                      height={150}
-                      fit="contain"
-                      withPlaceholder
-                      sx={{ paddingTop: 48 }}
-                    />
-                  </Card.Section>
-                  <Space h="md" />
-                  <Box sx={{ height: 50 }}>
-                    <Text
+              <Card
+                p="lg"
+                component={Link}
+                radius="md"
+                withBorder
+                href={`/wine/${wine.Id}`}
+              >
+                <Card.Section>
+                  <div className={classes.rating}>
+                    <Badge
                       size="lg"
-                      align="center"
-                      sx={(theme) => ({
-                        color: theme.colors.pink[9],
-                        lineHeight: "20px",
-                      })}
+                      radius="md"
+                      color="white"
+                      variant="outline"
                     >
-                      {wine.Name}
-                    </Text>
-                  </Box>
-                  <Text size="sm" align="center" lineClamp={1}>
-                    {wine.Producer}
+                      {wine.Rating}
+                    </Badge>
+                  </div>
+                  <div className={classes.bottleCount}>
+                    <AuthenticatedTemplate>
+                      Qty: {wine.BottleCount || 0}
+                    </AuthenticatedTemplate>
+                  </div>
+                  <Image
+                    src={wine.ImageUrl}
+                    alt={wine.Name}
+                    height={150}
+                    fit="contain"
+                    withPlaceholder
+                    sx={{ paddingTop: 48 }}
+                  />
+                </Card.Section>
+                <Space h="md" />
+                <Box sx={{ height: 50 }}>
+                  <Text
+                    size="lg"
+                    align="center"
+                    sx={(theme) => ({
+                      color: theme.colors.pink[9],
+                      lineHeight: "20px",
+                    })}
+                  >
+                    {wine.Name}
                   </Text>
-                  <Text size="xs" align="center">
-                    {wine.Vintage} | {wine.Country}
-                  </Text>
-                </Card>
-              </Link>
+                </Box>
+                <Text size="sm" align="center" lineClamp={1}>
+                  {wine.Producer}
+                </Text>
+                <Text size="xs" align="center">
+                  {wine.Vintage} | {wine.Country}
+                </Text>
+              </Card>
             </Grid.Col>
           ))}
         </Grid>
