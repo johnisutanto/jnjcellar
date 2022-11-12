@@ -1,4 +1,4 @@
-import { getWineFilters } from "../../utils/connectDb";
+import { getWineFilters } from "../../services/wine";
 
 export default async function handler(req, res) {
   const filters = await getWineFilters()

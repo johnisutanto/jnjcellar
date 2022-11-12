@@ -1,4 +1,4 @@
-import { getBottleCounts } from "../../utils/connectDb"
+import { getBottleCounts } from "../../services/cellar"
 import { AuthenticatedTemplate } from "@azure/msal-react"
 import styled from "styled-components"
 import { Center, Container, Title, Space, Text } from "@mantine/core"

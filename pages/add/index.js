@@ -17,7 +17,7 @@ import {
   useMantineTheme,
 } from "@mantine/core"
 import InputMask from "react-input-mask"
-import { getWineFilters } from "../../utils/connectDb"
+import { getWineFilters } from "../../services/wine"
 import { CurrencyDollar, Percentage } from "tabler-icons-react"
 import { useForm } from "@mantine/form"
 import { isEmpty } from "lodash"

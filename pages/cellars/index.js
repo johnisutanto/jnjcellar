@@ -73,13 +73,13 @@ export default function Home() {
       params.Color = colorIndex
     }
     if (wineFilters.country) {
-      params.Country = `'${wineFilters.country}'`
+      params.Country = wineFilters.country
     }
     if (wineFilters.region) {
-      params.Region = `'${wineFilters.region}'`
+      params.Region = wineFilters.region
     }
     if (wineFilters.varietal) {
-      params.Varietal = `'${wineFilters.varietal}'`
+      params.Varietal = wineFilters.varietal
     }
     setQueryString(toCleanQueryString(params))
   }, [wineFilters])

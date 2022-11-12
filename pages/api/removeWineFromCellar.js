@@ -1,4 +1,5 @@
-import { removeWineFromCellar, getWine } from "../../utils/connectDb";
+import { removeWineFromCellar } from "../../services/cellar";
+import { getWine } from "../../services/wine";
 
 export default async function handler(req, res) {
   const { id, location } = req.body
