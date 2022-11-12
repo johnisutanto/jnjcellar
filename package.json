@@ -7,12 +7,12 @@
     "lint": "next lint --dir pages --dir utils --dir shared"
   },
   "dependencies": {
-    "@azure/msal-browser": "^2.26.0",
-    "@azure/msal-react": "^1.4.2",
-    "@mantine/core": "^5.7.0",
-    "@mantine/form": "^5.7.0",
-    "@mantine/next": "^5.7.0",
-    "axios": "^0.27.2",
+    "@azure/msal-browser": "^2.31.0",
+    "@azure/msal-react": "^1.4.10",
+    "@mantine/core": "^5.7.2",
+    "@mantine/form": "^5.7.2",
+    "@mantine/next": "^5.7.2",
+    "axios": "^1.1.3",
     "net": "^1.0.2",
     "next": "^13.0.2",
     "react": "^18.2.0",
