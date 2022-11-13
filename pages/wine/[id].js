@@ -18,11 +18,12 @@ import {
   Stack,
   LoadingOverlay,
 } from "@mantine/core"
-import { ArrowLeft, Plus } from "tabler-icons-react"
+import { ArrowLeft, Plus, Check } from "tabler-icons-react"
 import { isEmpty } from "lodash"
 import CellarContainer from "../../components/Cellar/CellarContainer"
 import { useMediaQuery } from "@mantine/hooks"
 import useSWR from "swr"
+import { showNotification } from "@mantine/notifications"
 
 const WINE_COLUMNS_GROUPING = [
   ["Producer"],
@@ -76,6 +77,12 @@ const Wine = () => {
         setCurrentWine(res.data)
         setOpenRemovalDialog(false)
         setSelectedLocation(null)
+        showNotification({
+          title: 'Wine bottle is removed successfully',
+          message: 'Enjoy the wine. Cheers!!!',
+          icon: <Check />,
+          color: "green",
+        })
       })
   }
   const handleAddWineToCellar = async () => {
@@ -88,6 +95,12 @@ const Wine = () => {
         setCurrentWine(res.data)
         setOpenCellarDialog(false)
         setSelectedLocations([])
+        showNotification({
+          title: 'Wine bottles added successfully',
+          message: 'Come back soon to enjoy those bottles',
+          icon: <Check />,
+          color: "green",
+        })
       })
   }
   const getEmptyShelves = async () => {
