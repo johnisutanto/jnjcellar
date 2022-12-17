@@ -10,11 +10,12 @@ export const getWines = async (queries) => {
     where: Object.fromEntries(
       Object.entries(params || {}).map(([key, value]) => {
         if (key === "Varietal") {
-          return [key, { [Op.like]: value }]
+          return [key, { [Op.like]: `%${value}%` }]
         }
         return [key, { [Op.eq]: value }]
       })
     ),
+    order: [["Rating", "DESC"]],
     offset,
     limit: PAGE_SIZE,
   })
@@ -62,7 +63,7 @@ SELECT @countries as countries, @regions as regions, @producers as producers, @v
   const filters = Object.fromEntries(
     Object.entries(results).map(([key, value]) => [
       key,
-      JSON.parse(value).map((obj) => Object.values(obj)[0]),
+      JSON.parse(value).map((obj) => Object.values(obj)[0]).sort(),
     ])
   )
   return filters
