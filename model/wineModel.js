@@ -19,6 +19,7 @@ const Wine = (sequelize) => {
     IsFavorite: { type: DataTypes.TINYINT },
     DrinkDate: { type: DataTypes.STRING },
     BottleCount: { type: DataTypes.INTEGER },
+    DateAcquired: { type: DataTypes.DATE },
   }
   return sequelize.define("Wines", attributes, {
     tableName: "Wine",
