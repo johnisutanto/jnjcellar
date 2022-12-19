@@ -21,6 +21,7 @@ import {
 import { ArrowLeft, Plus, Check } from "tabler-icons-react"
 import { isEmpty } from "lodash"
 import CellarContainer from "../../components/Cellar/CellarContainer"
+import { CELLARS } from "../../components/Cellar/index"
 import { useMediaQuery } from "@mantine/hooks"
 import useSWR from "swr"
 import { showNotification } from "@mantine/notifications"
@@ -48,19 +49,27 @@ const Wine = () => {
   const [openRemovalDialog, setOpenRemovalDialog] = useState(false)
   const [openCellarDialog, setOpenCellarDialog] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState(null)
-  const [selectedLocations, setSelectedLocations] = useState([])
-  const handleSelectLocation = (location) => {
-    if (selectedLocations.includes(location)) {
-      const selectedIndex = selectedLocations.indexOf(location)
-      setSelectedLocations([
-        ...selectedLocations.slice(0, selectedIndex),
-        ...selectedLocations.slice(selectedIndex + 1),
-      ])
+  const [selectedLocations, setSelectedLocations] = useState({ STAIRCASE: [], STORAGE: [] })
+  const [selectedCellar, setSelectedCellar] = useState("STAIRCASE")
+  const handleSelectLocation = (cellar) => (location) => {
+    const locations = selectedLocations[cellar]
+    if (locations.includes(location)) {
+      const selectedIndex = locations.indexOf(location)
+      setSelectedLocations({
+        ...selectedLocations,
+        [cellar]: [
+          ...locations.slice(0, selectedIndex),
+          ...locations.slice(selectedIndex + 1),
+        ]
+      })
     } else {
-      setSelectedLocations([...selectedLocations, location])
+      setSelectedLocations({
+        ...selectedLocations,
+        [cellar]: [...locations, location]
+      })
     }
   }
-  const [emptyShelves, setEmptyShelves] = useState([])
+  const [emptyShelves, setEmptyShelves] = useState({ STAIRCASE: [], STORAGE: [] })
   const isMobile = useMediaQuery("(max-width: 600px)")
   const onOpen = (loc) => () => {
     setSelectedLocation(loc)
@@ -72,6 +81,7 @@ const Wine = () => {
       .post("/api/removeWineFromCellar", {
         id: wine.Id,
         location: selectedLocation,
+        cellarId: selectedCellar,
       })
       .then((res) => {
         setCurrentWine(res.data)
@@ -85,23 +95,22 @@ const Wine = () => {
         })
       })
   }
-  const handleAddWineToCellar = async () => {
-    axios
+  const handleAddWineToCellar = (cellarId) => async () => {
+    const res = await axios
       .post("/api/addWineToCellar", {
         id: wine.Id,
-        locations: selectedLocations,
+        locations: selectedLocations[cellarId],
+        cellarId,
       })
-      .then((res) => {
-        setCurrentWine(res.data)
-        setOpenCellarDialog(false)
-        setSelectedLocations([])
-        showNotification({
-          title: 'Wine bottles added successfully',
-          message: 'Come back soon to enjoy those bottles',
-          icon: <Check />,
-          color: "green",
-        })
-      })
+    setCurrentWine(res.data)
+    setOpenCellarDialog(false)
+    setSelectedLocations({ STAIRCASE: [], STORAGE: [] })
+    showNotification({
+      title: 'Wine bottles added successfully',
+      message: 'Come back soon to enjoy those bottles',
+      icon: <Check />,
+      color: "green",
+    })
   }
   const getEmptyShelves = async () => {
     axios.get("/api/getEmptyShelves").then((res) => {
@@ -129,10 +138,10 @@ const Wine = () => {
         <>
           <Space h="sm" />
           <Group>
-            {(value || "")
-              .split("|")
-              .filter((val) => !isEmpty(val))
-              .map((val) => (
+            {(value || {})
+              ?.STAIRCASE
+              //.filter((val) => !isEmpty(val))
+              ?.map((val) => (
                 <Button
                   variant="outline"
                   key={`location-${val}`}
@@ -218,14 +227,15 @@ const Wine = () => {
         }
       >
         <CellarContainer
+          cellarConfig={CELLARS.STAIRCASE}
           isMobile={isMobile}
-          emptyShelves={emptyShelves}
-          selectedLocations={selectedLocations}
-          onSelectSpace={handleSelectLocation}
+          emptyShelves={emptyShelves.STAIRCASE}
+          selectedLocations={selectedLocations.STAIRCASE}
+          onSelectSpace={handleSelectLocation("STAIRCASE")}
         />
         <Space h="xl" />
         <Group position="right">
-          <Button onClick={handleAddWineToCellar}>Add</Button>
+          <Button onClick={handleAddWineToCellar("STAIRCASE")}>Add</Button>
           <Button variant="outline" onClick={() => setOpenCellarDialog(false)}>
             Cancel
           </Button>

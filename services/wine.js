@@ -1,5 +1,6 @@
 import sequelize, { WineDB, CellarDB } from "../utils/sequelize"
 import { Op } from "sequelize"
+import { groupByCellar } from "./util"
 
 const PAGE_SIZE = 15
 
@@ -27,12 +28,13 @@ export const getWines = async (queries) => {
 
 export const getWine = async (id) => {
   const wine = await WineDB.findByPk(id)
-  const results = await CellarDB.findAll({
+  const locations = await CellarDB.findAll({
     where: {
       WineId: { [Op.eq]: id },
     },
   })
-  wine.Location = results.map((result) => result.Location).join("|")
+  // wine.Location = locations.map((result) => result.Location).join("|")
+  wine.Location = groupByCellar(locations)
   return wine
 }
 

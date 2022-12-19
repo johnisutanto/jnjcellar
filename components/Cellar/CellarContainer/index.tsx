@@ -2,7 +2,6 @@
 import { DefaultProps, Selectors, MantineNumberSize, Box } from "@mantine/core"
 import useStyles, { CellarContainerParams } from "./index.styles"
 import CellarSpace from "../CellarSpace"
-import { useState } from "react"
 
 // This type will contain a union with all selectors defined in useStyles,
 // in this case it will be `'root' | 'title' | 'description'`
@@ -14,17 +13,19 @@ interface CellarSpaceProps
   extends DefaultProps<CellarSpaceStylesNames, CellarContainerParams> {
   radius?: MantineNumberSize
   content: string
+  cellarConfig: number[]
   isMobile: boolean
   emptyShelves: string[]
   onSelectSpace: (space: string) => void
   selectedLocations: string[]
 }
-const CELLAR = [1, 2, 4, 5, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
+
 export default function CellarContainer({
   classNames,
   styles,
   unstyled,
   radius,
+  cellarConfig,
   isMobile,
   onSelectSpace,
   emptyShelves,
@@ -34,7 +35,7 @@ export default function CellarContainer({
 }: CellarSpaceProps) {
   const { classes, cx } = useStyles(
     // First argument of useStyles is styles params
-    { radius, isMobile },
+    { radius, isMobile, cellarConfig },
     // Second argument is responsible for styles api integration
     { name: "CellarContainer", classNames, styles, unstyled }
   )
@@ -47,10 +48,10 @@ export default function CellarContainer({
   // By doing so, you will add sx, padding (pt, pb, px, etc.) and margin (my, m, mt, etc.) props support
   return (
     <Box className={cx(classes.root, className)} {...others}>
-      {CELLAR.map((row, index) =>
+      {cellarConfig.map((row, index) =>
         [...Array(row).keys()].map((col) => {
           const gridArea = `${String.fromCharCode(65 + col)}${
-            CELLAR.length - index
+            cellarConfig.length - index
           }`
           return (
             <CellarSpace

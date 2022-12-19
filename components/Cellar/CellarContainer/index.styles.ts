@@ -4,22 +4,23 @@ import { createStyles, MantineNumberSize } from "@mantine/core"
 export interface CellarContainerParams {
   radius: MantineNumberSize
   isMobile: boolean
+  cellarConfig: number[]
 }
 
-const CELLAR = [1, 2, 4, 5, 6, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]
 let gridCss = {}
-const createGridTemplateAreas = () => {
+const createGridTemplateAreas = (cellarConfig: number[]) => {
   const grid = []
-  for (let i = 0; i < CELLAR.length; i++) {
+  const cellarWidth = Math.max(...cellarConfig)
+  for (let i = 0; i < cellarConfig.length; i++) {
     const row = []
-    for (let j = 0; j < 8; j++) {
-      const gridName = `${String.fromCharCode(65 + j)}${CELLAR.length - i}`
+    for (let j = 0; j < cellarWidth; j++) {
+      const gridName = `${String.fromCharCode(65 + j)}${cellarConfig.length - i}`
       row.push(
-        j < CELLAR[i]
+        j < cellarConfig[i]
           ? gridName
           : "."
       )
-      if (j < CELLAR[i]) {
+      if (j < cellarConfig[i]) {
         gridCss[gridName] = { gridArea: gridName }
       }
     }
@@ -28,17 +29,17 @@ const createGridTemplateAreas = () => {
   return grid.join("\n")
 }
 
-export default createStyles((theme, { radius, isMobile }: CellarContainerParams) => ({
+export default createStyles((theme, { radius, isMobile, cellarConfig }: CellarContainerParams) => ({
   // add all styles as usual
   root: {
     borderRadius: theme.fn.radius(radius),
     display: "grid",
-    gridTemplateColumns: "repeat(8, 1fr)",
+    gridTemplateColumns: `repeat(${Math.max(...cellarConfig)}, 1fr)`,
     gridTemplateRows: "1fr",
     gridColumnGap: isMobile ? 0 : "8px",
     gridRowGap: "8px",
     maxWidth: 600,
-    gridTemplateAreas: createGridTemplateAreas(),
+    gridTemplateAreas: createGridTemplateAreas(cellarConfig),
   },
   ...gridCss,
   title: { fontSize: theme.fontSizes.sm },

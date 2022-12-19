@@ -1,37 +1,38 @@
 import sequelize, { CellarDB } from "../utils/sequelize"
 import { Op } from "sequelize"
+import { groupByCellar } from "./util"
 
 export const getEmptyShelves = async () => {
   const results = await CellarDB.findAll({
-    attributes: ["Location"],
+    // attributes: ["Location"],
     where: {
-      CellarId: { [Op.eq]: "STAIRCASE" },
+      // CellarId: { [Op.eq]: "STAIRCASE" },
       WineId: { [Op.is]: null },
     },
   })
-  const locations = results.map((result) => result.Location)
+  const locations = groupByCellar(results)
   return locations
 }
 
-export const addWineToCellar = async (id, locations) => {
+export const addWineToCellar = async (id, locations, cellarId) => {
   const [results] = await sequelize.query(
-    `EXECUTE AddBottleToCellar :id, :locations`,
+    `EXECUTE AddBottleToCellar :id, :locations, :cellarId`,
     {
       raw: true,
       type: sequelize.QueryTypes.SELECT,
-      replacements: { id, locations: locations.join(",") },
+      replacements: { id, locations: locations.join(","), cellarId },
     }
   )
   return results
 }
 
-export const removeWineFromCellar = async (id, location) => {
+export const removeWineFromCellar = async (id, location, cellarId) => {
   const [results] = await sequelize.query(
-    `EXECUTE RemoveBottleFromCellar :id, :location`,
+    `EXECUTE RemoveBottleFromCellar :id, :location, :cellarId`,
     {
       raw: true,
       type: sequelize.QueryTypes.SELECT,
-      replacements: { id, location },
+      replacements: { id, location, cellarId },
     }
   )
   return results
