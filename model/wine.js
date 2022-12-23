@@ -32,6 +32,7 @@ const WINE_COLUMNS = [
   { name: "IsFavorite", type: "Bit" },
   { name: "DrinkDate", type: "VarChar"},
   { name: "BottleCount", type: "Int" },
+  { name: "Maturity", type: "NVarChar" },
 ]
 
 module.exports = { WINE_COLUMNS }

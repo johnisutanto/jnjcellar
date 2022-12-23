@@ -18,7 +18,7 @@ import {
   Stack,
   LoadingOverlay,
 } from "@mantine/core"
-import { ArrowLeft, Plus, Check } from "tabler-icons-react"
+import { ArrowLeft, Plus, Check, Home2, Building } from "tabler-icons-react"
 import { isEmpty } from "lodash"
 import CellarContainer from "../../components/Cellar/CellarContainer"
 import { CELLARS } from "../../components/Cellar/index"
@@ -27,11 +27,12 @@ import useSWR from "swr"
 import { showNotification } from "@mantine/notifications"
 
 const WINE_COLUMNS_GROUPING = [
-  ["Producer"],
-  ["Country", "Region", "Appellation"],
-  ["Vintage", "DrinkDate"],
-  ["Color", "AlcoholPct", "Rating"],
-  ["Varietal"],
+  [{ id: "Producer" }],
+  [{ id: "Country" }, { id: "Region" }, { id: "Appellation" }],
+  [{ id: "Vintage" }, { id: "DrinkDate", title: "Drink Date" }, { id: "Maturity" }],
+  [{ id: "Color" }, { id: "AlcoholPct", title: "Alcohol %" }, { id: "Rating" }, { id: "Price", isPrivate: true }],
+  [{ id: "Varietal" }],
+  [{ id: "Location", isPrivate: true }],
 ]
 const RESTRICTED_WINE_COLUMNS_GROUPING = [["Location", "Price"]]
 const EXCLUDED_COLUMNS = ["Id", "ImageUrl", "Location", "Price"]
@@ -71,8 +72,9 @@ const Wine = () => {
   }
   const [emptyShelves, setEmptyShelves] = useState({ STAIRCASE: [], STORAGE: [] })
   const isMobile = useMediaQuery("(max-width: 600px)")
-  const onOpen = (loc) => () => {
+  const onOpen = (loc, cellar) => () => {
     setSelectedLocation(loc)
+    setSelectedCellar(cellar)
     setOpenRemovalDialog(true)
   }
 
@@ -138,14 +140,14 @@ const Wine = () => {
         <>
           <Space h="sm" />
           <Group>
+            <Home2 size={30} color={"#E64980"} />
             {(value || {})
               ?.STAIRCASE
-              //.filter((val) => !isEmpty(val))
               ?.map((val) => (
                 <Button
                   variant="outline"
                   key={`location-${val}`}
-                  onClick={onOpen(val)}
+                  onClick={onOpen(val, "STAIRCASE")}
                 >
                   {val}
                 </Button>
@@ -156,6 +158,33 @@ const Wine = () => {
               onClick={() => {
                 getEmptyShelves()
                 setOpenCellarDialog(true)
+                setSelectedCellar("STAIRCASE")
+              }}
+            >
+              Add
+            </Button>
+          </Group>
+          <Space h="md" />
+          <Group>
+            <Building size={30} color={"#E64980"} />
+            {(value || {})
+              ?.STORAGE
+              ?.map((val) => (
+                <Button
+                  variant="outline"
+                  key={`location-${val}`}
+                  onClick={onOpen(val, "STORAGE")}
+                >
+                  {val}
+                </Button>
+              ))}
+            <Button
+              variant="outline"
+              leftIcon={<Plus size={16} />}
+              onClick={() => {
+                getEmptyShelves()
+                setOpenCellarDialog(true)
+                setSelectedCellar("STORAGE")
               }}
             >
               Add
@@ -227,15 +256,15 @@ const Wine = () => {
         }
       >
         <CellarContainer
-          cellarConfig={CELLARS.STAIRCASE}
+          cellarConfig={CELLARS[selectedCellar]}
           isMobile={isMobile}
-          emptyShelves={emptyShelves.STAIRCASE}
-          selectedLocations={selectedLocations.STAIRCASE}
-          onSelectSpace={handleSelectLocation("STAIRCASE")}
+          emptyShelves={emptyShelves[selectedCellar]}
+          selectedLocations={selectedLocations[selectedCellar]}
+          onSelectSpace={handleSelectLocation(selectedCellar)}
         />
         <Space h="xl" />
         <Group position="right">
-          <Button onClick={handleAddWineToCellar("STAIRCASE")}>Add</Button>
+          <Button onClick={handleAddWineToCellar(selectedCellar)}>Add</Button>
           <Button variant="outline" onClick={() => setOpenCellarDialog(false)}>
             Cancel
           </Button>
@@ -270,9 +299,25 @@ const Wine = () => {
                 <Group spacing="xl" grow>
                   {group.map((field) => {
                     const column = WINE_COLUMNS.find(
-                      (col) => col.name === field
+                      (col) => col.name === field.id
                     )
-                    return (
+                    return field.isPrivate ? (
+                      <AuthenticatedTemplate>
+                        <Fragment key={`column-${field}`}>
+                        <Stack spacing={0}>
+                          <Property
+                            name={column.name}
+                            value={
+                              column.transform
+                                ? column.transform(currentWine[column.name])
+                                : currentWine[column.name]
+                            }
+                          />
+                        </Stack>
+                        <Space w="xl" />
+                      </Fragment>
+                      </AuthenticatedTemplate>
+                      ) : (
                       <Fragment key={`column-${field}`}>
                         <Stack spacing={0}>
                           <Property
@@ -292,35 +337,6 @@ const Wine = () => {
                 <Space h="xl" />
               </Fragment>
             ))}
-            <AuthenticatedTemplate>
-              {RESTRICTED_WINE_COLUMNS_GROUPING.map((group) => (
-                <Fragment key={`${group.join("#")}`}>
-                  <Group spacing="xl" grow align="flex-start">
-                    {group.map((field) => {
-                      const column = WINE_COLUMNS.find(
-                        (col) => col.name === field
-                      )
-                      return (
-                        <Fragment key={`column-${field}`}>
-                          <Stack spacing={0} justify="flex-start">
-                            <Property
-                              name={column.name}
-                              value={
-                                column.transform
-                                  ? column.transform(currentWine[column.name])
-                                  : currentWine[column.name]
-                              }
-                            />
-                          </Stack>
-                          <Space w="xl" />
-                        </Fragment>
-                      )
-                    })}
-                  </Group>
-                  <Space h="xl" />
-                </Fragment>
-              ))}
-            </AuthenticatedTemplate>
           </Grid.Col>
         </Grid>
       </Container>

@@ -20,6 +20,7 @@ const Wine = (sequelize) => {
     DrinkDate: { type: DataTypes.STRING },
     BottleCount: { type: DataTypes.INTEGER },
     DateAcquired: { type: DataTypes.DATE },
+    Maturity: { type: DataTypes.STRING },
   }
   return sequelize.define("Wines", attributes, {
     tableName: "Wine",
