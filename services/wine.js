@@ -56,8 +56,9 @@ DECLARE @regions nvarchar(max);
 DECLARE @producers nvarchar(max);
 DECLARE @varietals nvarchar(max);
 DECLARE @appellations nvarchar(max);
-EXECUTE RetrieveWineFilters @countries OUTPUT, @regions OUTPUT, @producers OUTPUT, @varietals OUTPUT, @appellations OUTPUT;
-SELECT @countries as countries, @regions as regions, @producers as producers, @varietals as varietals, @appellations as appellations;
+DECLARE @maturity nvarchar(max);
+EXECUTE RetrieveWineFilters @countries OUTPUT, @regions OUTPUT, @producers OUTPUT, @varietals OUTPUT, @appellations OUTPUT, @maturity OUTPUT;
+SELECT @countries as countries, @regions as regions, @producers as producers, @varietals as varietals, @appellations as appellations, @maturity as maturity;
   `,
     { raw: true, type: sequelize.QueryTypes.SELECT }
   )

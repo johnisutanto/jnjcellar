@@ -19,12 +19,14 @@ import {
 } from "@mantine/core"
 import { AuthenticatedTemplate } from "@azure/msal-react"
 import useSWR from "swr"
+import { compact } from "lodash"
 
 const DEFAULT_FILTERS = {
   country: null,
   color: null,
   region: null,
   varietal: null,
+  maturity: null,
 }
 
 const useStyles = createStyles((theme, _params, getRef) => ({
@@ -80,6 +82,9 @@ export default function Home() {
     }
     if (wineFilters.varietal) {
       params.Varietal = wineFilters.varietal
+    }
+    if (wineFilters.maturity) {
+      params.Maturity = wineFilters.maturity
     }
     setQueryString(toCleanQueryString(params))
   }, [wineFilters])
@@ -138,6 +143,15 @@ export default function Home() {
                 value={wineFilters.varietal}
                 data={filters.varietals}
                 onChange={handleWineFilter("varietal")}
+              />
+              <Select
+                clearable
+                id="select-maturity"
+                name="select-maturity"
+                placeholder="Maturity"
+                value={wineFilters.maturity}
+                data={compact(filters.maturity)}
+                onChange={handleWineFilter("maturity")}
               />
             </Group>
           )}
