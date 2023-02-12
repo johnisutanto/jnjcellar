@@ -16,7 +16,7 @@ export const getWines = async (queries) => {
         return [key, { [Op.eq]: value }]
       })
     ),
-    order: [["Rating", "DESC"]],
+    order: [["Rating", "DESC"], ["Id"]],
     offset,
     limit: PAGE_SIZE,
   })
