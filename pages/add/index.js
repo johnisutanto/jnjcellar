@@ -56,6 +56,7 @@ export default function AddWine({ filters }) {
       drinkDate: "",
       imageUrl: "",
       dateAcquired: new Date(),
+      maturity: null,
     },
     validate: {
       varietal: (value) =>
@@ -287,6 +288,17 @@ export default function AddWine({ filters }) {
               <TextInput
                 label="Image URL"
                 {...form.getInputProps("imageUrl")}
+              />
+            </Grid.Col>
+            <Grid.Col xs={4}>
+              <Select
+                id="select-maturity"
+                name="select-maturity"
+                placeholder="Maturity"
+                label="Maturity"
+                data={filters.maturity}
+                {...form.getInputProps("maturity")}
+                required
               />
             </Grid.Col>
           </Grid>

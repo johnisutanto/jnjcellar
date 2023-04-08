@@ -27,6 +27,7 @@ const DEFAULT_FILTERS = {
   region: null,
   varietal: null,
   maturity: null,
+  location: null,
 }
 
 const useStyles = createStyles((theme, _params, getRef) => ({
@@ -85,6 +86,9 @@ export default function Home() {
     }
     if (wineFilters.maturity) {
       params.Maturity = wineFilters.maturity
+    }
+    if (wineFilters.location) {
+      params.Location = wineFilters.location
     }
     setQueryString(toCleanQueryString(params))
   }, [wineFilters])
@@ -152,6 +156,15 @@ export default function Home() {
                 value={wineFilters.maturity}
                 data={compact(filters.maturity)}
                 onChange={handleWineFilter("maturity")}
+              />
+              <Select
+                clearable
+                id="select-location"
+                name="select-location"
+                placeholder="Location"
+                data={filters.locations}
+                value={wineFilters.location}
+                onChange={handleWineFilter("location")}
               />
             </Group>
           )}

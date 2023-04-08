@@ -1,21 +1,33 @@
 import sequelize, { WineDB, CellarDB } from "../utils/sequelize"
 import { Op } from "sequelize"
 import { groupByCellar } from "./util"
+import { isNil } from "lodash"
 
 const PAGE_SIZE = 15
 
 export const getWines = async (queries) => {
   const { page, ...params } = queries
   const offset = page * PAGE_SIZE
-  const { count, rows } = await WineDB.findAndCountAll({
-    where: Object.fromEntries(
-      Object.entries(params || {}).map(([key, value]) => {
+  const whereQuery = Object.fromEntries(
+    Object.entries(params || {})
+      .filter(([key, value]) => key !== "Location")
+      .map(([key, value]) => {
         if (key === "Varietal") {
           return [key, { [Op.like]: `%${value}%` }]
         }
         return [key, { [Op.eq]: value }]
       })
-    ),
+  )
+  if (queries.Location) {
+    const selectedLocation = queries.Location.toUpperCase()
+    whereQuery[Op.and] = [
+      sequelize.literal(
+        `EXISTS (SELECT 1 FROM Cellar AS cellar WHERE Wines.Id = cellar.WineId AND cellar.CellarId = '${selectedLocation}')`
+      ),
+    ]
+  }
+  const { count, rows } = await WineDB.findAndCountAll({
+    where: whereQuery,
     order: [["Rating", "DESC"], ["Id"]],
     offset,
     limit: PAGE_SIZE,
@@ -41,8 +53,10 @@ export const getWine = async (id) => {
 const toSqlCase = (str) => str.charAt(0).toUpperCase() + str.slice(1)
 
 export const insertWine = async (wine) => {
-  const fields = Object.keys(wine).map(key => toSqlCase(key))
-  const wineSql = Object.fromEntries(Object.entries(wine).map(([key, value]) => [toSqlCase(key), value]))
+  const fields = Object.keys(wine).map((key) => toSqlCase(key))
+  const wineSql = Object.fromEntries(
+    Object.entries(wine).map(([key, value]) => [toSqlCase(key), value])
+  )
   const newWine = await WineDB.create(wineSql, { fields })
   return newWine
 }
@@ -66,8 +80,12 @@ SELECT @countries as countries, @regions as regions, @producers as producers, @v
   const filters = Object.fromEntries(
     Object.entries(results).map(([key, value]) => [
       key,
-      JSON.parse(value).map((obj) => Object.values(obj)[0]).sort(),
+      JSON.parse(value)
+        .map((obj) => Object.values(obj)[0])
+        .filter((val) => !isNil(val))
+        .sort(),
     ])
   )
+  filters["locations"] = ["Staircase", "Storage"]
   return filters
 }
