@@ -59,7 +59,7 @@ export default function CellarContainer({
               content={gridArea}
               className={classes[gridArea]}
               isMobile={isMobile}
-              isAvailable={emptyShelves.includes(gridArea)}
+              isAvailable={emptyShelves?.includes(gridArea)}
               isSelected={selectedLocations.includes(gridArea)}
               onSelect={handleSelectSpace(gridArea)}
             />
