@@ -7,8 +7,8 @@
     "lint": "next lint --dir pages --dir utils --dir shared"
   },
   "dependencies": {
-    "@azure/msal-browser": "^2.37.0",
-    "@azure/msal-react": "^1.5.7",
+    "@azure/msal-browser": "^2.31.0",
+    "@azure/msal-react": "^1.4.10",
     "@mantine/core": "^5.9.5",
     "@mantine/dates": "^5.9.5",
     "@mantine/form": "^5.9.5",
