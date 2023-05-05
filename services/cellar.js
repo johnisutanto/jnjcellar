@@ -39,14 +39,10 @@ export const removeWineFromCellar = async (id, location, cellarId) => {
 }
 
 export const getBottleCounts = async () => {
-  const results = await sequelize.query(
-    `SELECT count(*) as total FROM 
-  (SELECT
-    Id,
-    value
-  FROM Wine
-  CROSS APPLY STRING_SPLIT(Location, '|')) mywine`,
-    { raw: true, type: sequelize.QueryTypes.SELECT }
-  )
-  return results[0].total
+  const count = await CellarDB.count({
+    where: {
+      WineId: { [Op.ne]: null },
+    }
+  })
+  return count
 }
