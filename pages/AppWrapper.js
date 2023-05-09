@@ -14,6 +14,7 @@ import {
   Space,
   Footer,
   Center,
+  Text,
 } from "@mantine/core"
 import { useState } from "react"
 import Link from "next/link"
@@ -132,7 +133,11 @@ export default function AppWrapper(props) {
       }
       footer={
         <Footer height={60} p="md">
-          <Center>🍷 Juansi is whining 🥂 Johni is wining 🍷</Center>
+          <Center>
+            <Text size="sm" color="gray">
+              🍷 Wine 🥂 Vino 🥂 Vin 🥂 Wein 🥂 Wijn 🥂 ワイン 🥂 紅酒 🥂 포도주 🥂 Vinum 🍷
+            </Text>
+          </Center>
         </Footer>
       }
       padding={0}

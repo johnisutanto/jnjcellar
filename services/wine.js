@@ -1,7 +1,7 @@
 import sequelize, { WineDB, CellarDB } from "../utils/sequelize"
 import { Op } from "sequelize"
 import { groupByCellar } from "./util"
-import { isNil } from "lodash"
+import { isNil, omit } from "lodash"
 
 const PAGE_SIZE = 15
 
@@ -88,4 +88,19 @@ SELECT @countries as countries, @regions as regions, @producers as producers, @v
   )
   filters["locations"] = ["Staircase", "Storage"]
   return filters
+}
+
+export const updateWine = async (id, wine) => {
+  // const wine = await WineDB.findByPk(id)
+  const fields = Object.keys(wine).map((key) => toSqlCase(key))
+  const wineSql = omit(Object.fromEntries(
+    Object.entries(wine).map(([key, value]) => [toSqlCase(key), value])
+  ), ["Id", "Location"])
+  console.log(`query ${JSON.stringify(wineSql)}`)
+  const updatedWine = await WineDB.update(wineSql, {
+    where: {
+      Id: { [Op.eq]: id },
+    },
+  })
+  return updatedWine
 }

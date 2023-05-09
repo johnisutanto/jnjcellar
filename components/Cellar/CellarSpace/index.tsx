@@ -7,7 +7,7 @@ import {
   Center,
 } from "@mantine/core"
 import useStyles, { CellarSpaceParams } from "./index.styles"
-import { Glass } from "tabler-icons-react"
+import { IconGlass } from "@tabler/icons-react"
 import { noop } from "lodash"
 
 // This type will contain a union with all selectors defined in useStyles,
@@ -63,7 +63,7 @@ export default function CellarSpace({
           content
         ) : (
           <Center>
-            <Glass size={30} color={"#D3D3D3"} />
+            <IconGlass size={30} color={"#D3D3D3"} />
           </Center>
         )}
       </div>

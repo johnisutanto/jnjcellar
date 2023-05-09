@@ -4,7 +4,9 @@ import axios from "axios"
 import { AuthenticatedTemplate } from "@azure/msal-react"
 import { useRouter } from "next/router"
 import {
+  ActionIcon,
   Container,
+  Flex,
   Grid,
   Title,
   Image,
@@ -18,13 +20,14 @@ import {
   Stack,
   LoadingOverlay,
 } from "@mantine/core"
-import { ArrowLeft, Plus, Check, Home2, Building } from "tabler-icons-react"
+import { IconArrowLeft, IconPlus, IconCheck, IconHome2, IconBuilding, IconPencil, IconStar } from "@tabler/icons-react"
 import { isEmpty } from "lodash"
 import CellarContainer from "../../components/Cellar/CellarContainer"
 import { CELLARS } from "../../components/Cellar/index"
 import { useMediaQuery } from "@mantine/hooks"
 import useSWR from "swr"
 import { showNotification } from "@mantine/notifications"
+import Link from "next/link"
 
 const WINE_COLUMNS_GROUPING = [
   [{ id: "Producer" }],
@@ -92,7 +95,7 @@ const Wine = () => {
         showNotification({
           title: 'Wine bottle is removed successfully',
           message: 'Enjoy the wine. Cheers!!!',
-          icon: <Check />,
+          icon: <IconCheck />,
           color: "green",
         })
       })
@@ -110,7 +113,7 @@ const Wine = () => {
     showNotification({
       title: 'Wine bottles added successfully',
       message: 'Come back soon to enjoy those bottles',
-      icon: <Check />,
+      icon: <IconCheck />,
       color: "green",
     })
   }
@@ -140,7 +143,7 @@ const Wine = () => {
         <>
           <Space h="sm" />
           <Group>
-            <Home2 size={30} color={"#E64980"} />
+            <IconHome2 size={30} color={"#E64980"} />
             {(value || {})
               ?.STAIRCASE
               ?.map((val) => (
@@ -154,7 +157,7 @@ const Wine = () => {
               ))}
             <Button
               variant="outline"
-              leftIcon={<Plus size={16} />}
+              leftIcon={<IconPlus size={16} />}
               onClick={() => {
                 getEmptyShelves()
                 setOpenCellarDialog(true)
@@ -166,7 +169,7 @@ const Wine = () => {
           </Group>
           <Space h="md" />
           <Group>
-            <Building size={30} color={"#E64980"} />
+            <IconBuilding size={30} color={"#E64980"} />
             {(value || {})
               ?.STORAGE
               ?.map((val) => (
@@ -180,7 +183,7 @@ const Wine = () => {
               ))}
             <Button
               variant="outline"
-              leftIcon={<Plus size={16} />}
+              leftIcon={<IconPlus size={16} />}
               onClick={() => {
                 getEmptyShelves()
                 setOpenCellarDialog(true)
@@ -277,7 +280,7 @@ const Wine = () => {
               color="pink"
               variant="subtle"
               onClick={() => router.back()}
-              leftIcon={<ArrowLeft size={32} />}
+              leftIcon={<IconArrowLeft size={32} />}
             >
               Back
             </Button>
@@ -291,7 +294,13 @@ const Wine = () => {
             />
           </Grid.Col>
           <Grid.Col xs={8}>
-            <Title order={1}>{currentWine.Name}</Title>
+            <Flex gap="xs" justify="flex-start" align="center">
+              <Title order={1}>{currentWine.Name}</Title>
+              <AuthenticatedTemplate>
+                <Space w="xs" />
+                <ActionIcon variant="subtle" component={Link} href={`/wine/${id}/edit`}><IconPencil size="2rem" /></ActionIcon>
+              </AuthenticatedTemplate>
+            </Flex>
             <Space h="xl" />
             <Space h="md" />
             {WINE_COLUMNS_GROUPING.map((group) => (
