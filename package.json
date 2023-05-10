@@ -4,7 +4,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --dir pages --dir utils --dir shared"
+    "lint": "next lint --dir pages --dir utils --dir shared --dir components --dir model"
   },
   "dependencies": {
     "@azure/msal-browser": "^2.31.0",

@@ -35,7 +35,11 @@ const AboutUs = ({ bottleCounts }) => {
         <Space h="xl" />
         <img
           src="https://wineimages.blob.core.windows.net/aboutus/JohniJuanBourbinSonoma.jpg"
-          style={{ objectFit: "cover", width: "100%", height: "500px" }}
+          style={{
+            objectFit: "cover",
+            width: "100%",
+            height: "500px",
+          }}
         />
       </Container>
       <AuthenticatedTemplate>
@@ -47,7 +51,7 @@ const AboutUs = ({ bottleCounts }) => {
   )
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps() {
   const bottleCounts = await getBottleCounts()
 
   return {

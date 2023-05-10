@@ -1,4 +1,4 @@
-import { getWine, updateWine } from "../../services/wine";
+import { getWine, updateWine } from "../../services/wine"
 
 export default async function handler(req, res) {
   const id = req.body.id

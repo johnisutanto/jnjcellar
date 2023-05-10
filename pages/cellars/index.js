@@ -30,7 +30,7 @@ const DEFAULT_FILTERS = {
   location: null,
 }
 
-const useStyles = createStyles((theme, _params, getRef) => ({
+const useStyles = createStyles((_theme, _params, _getRef) => ({
   rating: {
     color: "red",
     position: "absolute",
@@ -51,13 +51,16 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 const wineColorOptions = ["Red", "White", "Rose"]
 export default function Home() {
-  const { data: filters, filtersError } = useSWR("/api/getWineFilters", fetcher)
+  const { data: filters, _filtersError } = useSWR(
+    "/api/getWineFilters",
+    fetcher
+  )
   const [currentWines, setCurrentWines] = useState([])
   const [wineFilters, setWineFilters] = useQueryState(DEFAULT_FILTERS)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPage, setTotalPage] = useState(0)
   const [queryString, setQueryString] = useState("")
-  const { data: wines, error } = useSWR(
+  const { data: wines, _error } = useSWR(
     `/api/search?page=${currentPage - 1}&${queryString}`,
     fetcher
   )
@@ -174,7 +177,7 @@ export default function Home() {
       <Space h="xl" />
       <Container fluid px="xl">
         <Grid>
-          {(currentWines || []).map((wine, index) => (
+          {(currentWines || []).map((wine, _index) => (
             <Grid.Col sm={6} md={4} xl={2} lg={3} key={`card-wine-${wine.Id}`}>
               <Card
                 p="lg"

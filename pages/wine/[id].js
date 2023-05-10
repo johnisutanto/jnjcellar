@@ -20,8 +20,14 @@ import {
   Stack,
   LoadingOverlay,
 } from "@mantine/core"
-import { IconArrowLeft, IconPlus, IconCheck, IconHome2, IconBuilding, IconPencil, IconStar } from "@tabler/icons-react"
-import { isEmpty } from "lodash"
+import {
+  IconArrowLeft,
+  IconPlus,
+  IconCheck,
+  IconHome2,
+  IconBuilding,
+  IconPencil,
+} from "@tabler/icons-react"
 import CellarContainer from "../../components/Cellar/CellarContainer"
 import { CELLARS } from "../../components/Cellar/index"
 import { useMediaQuery } from "@mantine/hooks"
@@ -32,13 +38,21 @@ import Link from "next/link"
 const WINE_COLUMNS_GROUPING = [
   [{ id: "Producer" }],
   [{ id: "Country" }, { id: "Region" }, { id: "Appellation" }],
-  [{ id: "Vintage" }, { id: "DrinkDate", title: "Drink Date" }, { id: "Maturity" }],
-  [{ id: "Color" }, { id: "AlcoholPct", title: "Alcohol %" }, { id: "Rating" }, { id: "Price", isPrivate: true }],
+  [
+    { id: "Vintage" },
+    { id: "DrinkDate", title: "Drink Date" },
+    { id: "Maturity" },
+  ],
+  [
+    { id: "Color" },
+    { id: "AlcoholPct", title: "Alcohol %" },
+    { id: "Rating" },
+    { id: "Price", isPrivate: true },
+  ],
   [{ id: "Varietal" }],
   [{ id: "Location", isPrivate: true }],
 ]
-const RESTRICTED_WINE_COLUMNS_GROUPING = [["Location", "Price"]]
-const EXCLUDED_COLUMNS = ["Id", "ImageUrl", "Location", "Price"]
+
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 const Wine = () => {
   const router = useRouter()
@@ -53,7 +67,10 @@ const Wine = () => {
   const [openRemovalDialog, setOpenRemovalDialog] = useState(false)
   const [openCellarDialog, setOpenCellarDialog] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState(null)
-  const [selectedLocations, setSelectedLocations] = useState({ STAIRCASE: [], STORAGE: [] })
+  const [selectedLocations, setSelectedLocations] = useState({
+    STAIRCASE: [],
+    STORAGE: [],
+  })
   const [selectedCellar, setSelectedCellar] = useState("STAIRCASE")
   const handleSelectLocation = (cellar) => (location) => {
     const locations = selectedLocations[cellar]
@@ -64,16 +81,19 @@ const Wine = () => {
         [cellar]: [
           ...locations.slice(0, selectedIndex),
           ...locations.slice(selectedIndex + 1),
-        ]
+        ],
       })
     } else {
       setSelectedLocations({
         ...selectedLocations,
-        [cellar]: [...locations, location]
+        [cellar]: [...locations, location],
       })
     }
   }
-  const [emptyShelves, setEmptyShelves] = useState({ STAIRCASE: [], STORAGE: [] })
+  const [emptyShelves, setEmptyShelves] = useState({
+    STAIRCASE: [],
+    STORAGE: [],
+  })
   const isMobile = useMediaQuery("(max-width: 600px)")
   const onOpen = (loc, cellar) => () => {
     setSelectedLocation(loc)
@@ -93,26 +113,25 @@ const Wine = () => {
         setOpenRemovalDialog(false)
         setSelectedLocation(null)
         showNotification({
-          title: 'Wine bottle is removed successfully',
-          message: 'Enjoy the wine. Cheers!!!',
+          title: "Wine bottle is removed successfully",
+          message: "Enjoy the wine. Cheers!!!",
           icon: <IconCheck />,
           color: "green",
         })
       })
   }
   const handleAddWineToCellar = (cellarId) => async () => {
-    const res = await axios
-      .post("/api/addWineToCellar", {
-        id: wine.Id,
-        locations: selectedLocations[cellarId],
-        cellarId,
-      })
+    const res = await axios.post("/api/addWineToCellar", {
+      id: wine.Id,
+      locations: selectedLocations[cellarId],
+      cellarId,
+    })
     setCurrentWine(res.data)
     setOpenCellarDialog(false)
     setSelectedLocations({ STAIRCASE: [], STORAGE: [] })
     showNotification({
-      title: 'Wine bottles added successfully',
-      message: 'Come back soon to enjoy those bottles',
+      title: "Wine bottles added successfully",
+      message: "Come back soon to enjoy those bottles",
       icon: <IconCheck />,
       color: "green",
     })
@@ -144,17 +163,15 @@ const Wine = () => {
           <Space h="sm" />
           <Group>
             <IconHome2 size={30} color={"#E64980"} />
-            {(value || {})
-              ?.STAIRCASE
-              ?.map((val) => (
-                <Button
-                  variant="outline"
-                  key={`location-${val}`}
-                  onClick={onOpen(val, "STAIRCASE")}
-                >
-                  {val}
-                </Button>
-              ))}
+            {(value || {})?.STAIRCASE?.map((val) => (
+              <Button
+                variant="outline"
+                key={`location-${val}`}
+                onClick={onOpen(val, "STAIRCASE")}
+              >
+                {val}
+              </Button>
+            ))}
             <Button
               variant="outline"
               leftIcon={<IconPlus size={16} />}
@@ -170,17 +187,15 @@ const Wine = () => {
           <Space h="md" />
           <Group>
             <IconBuilding size={30} color={"#E64980"} />
-            {(value || {})
-              ?.STORAGE
-              ?.map((val) => (
-                <Button
-                  variant="outline"
-                  key={`location-${val}`}
-                  onClick={onOpen(val, "STORAGE")}
-                >
-                  {val}
-                </Button>
-              ))}
+            {(value || {})?.STORAGE?.map((val) => (
+              <Button
+                variant="outline"
+                key={`location-${val}`}
+                onClick={onOpen(val, "STORAGE")}
+              >
+                {val}
+              </Button>
+            ))}
             <Button
               variant="outline"
               leftIcon={<IconPlus size={16} />}
@@ -198,7 +213,12 @@ const Wine = () => {
       {name !== "Varietal" && name !== "Location" && (
         <Text
           size="xl"
-          sx={{ "&:empty:before": { content: `'empty'`, color: "white" } }}
+          sx={{
+            "&:empty:before": {
+              content: `'empty'`,
+              color: "white",
+            },
+          }}
         >
           {value}
         </Text>
@@ -298,7 +318,13 @@ const Wine = () => {
               <Title order={1}>{currentWine.Name}</Title>
               <AuthenticatedTemplate>
                 <Space w="xs" />
-                <ActionIcon variant="subtle" component={Link} href={`/wine/${id}/edit`}><IconPencil size="2rem" /></ActionIcon>
+                <ActionIcon
+                  variant="subtle"
+                  component={Link}
+                  href={`/wine/${id}/edit`}
+                >
+                  <IconPencil size="2rem" />
+                </ActionIcon>
               </AuthenticatedTemplate>
             </Flex>
             <Space h="xl" />
@@ -313,20 +339,20 @@ const Wine = () => {
                     return field.isPrivate ? (
                       <AuthenticatedTemplate>
                         <Fragment key={`column-${field}`}>
-                        <Stack spacing={0}>
-                          <Property
-                            name={column.name}
-                            value={
-                              column.transform
-                                ? column.transform(currentWine[column.name])
-                                : currentWine[column.name]
-                            }
-                          />
-                        </Stack>
-                        <Space w="xl" />
-                      </Fragment>
+                          <Stack spacing={0}>
+                            <Property
+                              name={column.name}
+                              value={
+                                column.transform
+                                  ? column.transform(currentWine[column.name])
+                                  : currentWine[column.name]
+                              }
+                            />
+                          </Stack>
+                          <Space w="xl" />
+                        </Fragment>
                       </AuthenticatedTemplate>
-                      ) : (
+                    ) : (
                       <Fragment key={`column-${field}`}>
                         <Stack spacing={0}>
                           <Property

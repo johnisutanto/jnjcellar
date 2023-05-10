@@ -8,7 +8,7 @@ export interface CellarSpaceParams {
 }
 
 export default createStyles(
-  (theme, { radius, isMobile, isAvailable }: CellarSpaceParams) => ({
+  (theme, { radius, isAvailable }: CellarSpaceParams) => ({
     // add all styles as usual
     root: {
       borderRadius: theme.fn.radius(radius),

@@ -5,7 +5,10 @@ const History = (sequelize) => {
     comment: { type: DataTypes.STRING },
     user: { type: DataTypes.STRING },
   }
-  return sequelize.define("History", attributes, { tableName: "History", freezeTableName: true })
+  return sequelize.define("History", attributes, {
+    tableName: "History",
+    freezeTableName: true,
+  })
 }
 
 export default History

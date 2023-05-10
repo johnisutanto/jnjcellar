@@ -1,6 +1,5 @@
 import { getDbConfig } from "./dbUtil"
 import { Connection, Request, TYPES } from "tedious"
-import { WINE_COLUMNS } from "../model/wine"
 
 const getConnection = () => {
   let connection = null
@@ -15,7 +14,6 @@ export const updateWine = (id, value) =>
     var result = null
 
     const connection = getConnection()
-    const allSqlColumns = WINE_COLUMNS.map((col) => col.sqlName).slice(1)
     const sqlString = `UPDATE Wine SET Location = @Location WHERE Id = ${id}`
     console.log(`SQL String = ${sqlString}`)
     const request = new Request(sqlString, (err) => {

@@ -8,7 +8,7 @@ const WINE_COLUMNS = [
   { name: "Vintage", type: "SmallInt" },
   {
     name: "Color",
-    transform: (val) => val === 0 ? "Red" : val === 1 ? "White" : "Rose",
+    transform: (val) => (val === 0 ? "Red" : val === 1 ? "White" : "Rose"),
     type: "TinyInt",
   },
   { name: "Rating", isNumber: true, type: "TinyInt" },
@@ -30,7 +30,7 @@ const WINE_COLUMNS = [
   { name: "Location", type: "NVarChar" },
   { name: "ImageUrl", type: "NVarChar" },
   { name: "IsFavorite", type: "Bit" },
-  { name: "DrinkDate", type: "VarChar"},
+  { name: "DrinkDate", type: "VarChar" },
   { name: "BottleCount", type: "Int" },
   { name: "Maturity", type: "NVarChar" },
 ]

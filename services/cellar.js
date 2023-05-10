@@ -42,7 +42,7 @@ export const getBottleCounts = async () => {
   const count = await CellarDB.count({
     where: {
       WineId: { [Op.ne]: null },
-    }
+    },
   })
   return count
 }

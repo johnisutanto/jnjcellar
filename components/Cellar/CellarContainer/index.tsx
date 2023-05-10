@@ -16,7 +16,7 @@ interface CellarSpaceProps
   cellarConfig: number[]
   isMobile: boolean
   emptyShelves: string[]
-  onSelectSpace: (space: string) => void
+  onSelectSpace: (_space: string) => void
   selectedLocations: string[]
 }
 

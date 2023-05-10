@@ -11,7 +11,7 @@ export default function App(props: AppProps) {
 
   const CustomGlobal = () => (
     <Global
-      styles={(theme) => ({
+      styles={() => ({
         "*, *::before, *::after": {
           boxSizing: "border-box",
         },

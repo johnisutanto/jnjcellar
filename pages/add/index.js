@@ -26,7 +26,6 @@ export default function AddWine({ filters }) {
       rating: "",
       varietal: [],
       drinkDate: "",
-      imageUrl: "",
       dateAcquired: new Date(),
       maturity: null,
     },
@@ -62,7 +61,7 @@ export default function AddWine({ filters }) {
   )
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps() {
   const filters = await getWineFilters()
 
   return {

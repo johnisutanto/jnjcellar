@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import useSWR from "swr"
 import { getWineFilters } from "../../../services/wine"
-import styled from "styled-components"
 import { useForm } from "@mantine/form"
 import { isEmpty } from "lodash"
 import axios from "axios"
@@ -10,14 +9,11 @@ import WineForm from "components/WineForm"
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
-const MarginText = styled.div`
-  margin-left: 20px;
-`
 const EditWine = ({ filters }) => {
   const router = useRouter()
   const { id } = router.query
-  const { data: wine, error } = useSWR(id ? `/api/wine/${id}` : null, fetcher)
-  const [currentWine, setCurrentWine] = useState(null)
+  const { data: wine } = useSWR(id ? `/api/wine/${id}` : null, fetcher)
+  const [_currentWine, setCurrentWine] = useState(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const form = useForm({
@@ -36,7 +32,6 @@ const EditWine = ({ filters }) => {
       rating: "",
       varietal: [],
       drinkDate: "",
-      imageUrl: "",
       dateAcquired: new Date(),
       maturity: null,
     },
@@ -99,7 +94,7 @@ const EditWine = ({ filters }) => {
   ) : null
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(_context) {
   const filters = await getWineFilters()
 
   return {

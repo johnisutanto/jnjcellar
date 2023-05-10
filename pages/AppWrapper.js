@@ -31,7 +31,6 @@ const useStyles = createStyles((theme) => ({
   },
 
   links: {
-    
     fontWeight: 600,
     [theme.fn.smallerThan("sm")]: {
       display: "none",
@@ -52,7 +51,7 @@ const useStyles = createStyles((theme) => ({
       },
       "&:first-of-type": {
         marginTop: 30,
-      }
+      },
     },
     [theme.fn.largerThan("sm")]: {
       color: theme.colors.gray[0],
@@ -69,7 +68,14 @@ export default function AppWrapper(props) {
   const { instance } = useMsal()
   const AppBody = props.AppBody
   const createLink = (label, href) => (
-    <Anchor href={href} component={Link} className={classes.navbarLinks} onClick={() => setOpened(false)}>{label}</Anchor>
+    <Anchor
+      href={href}
+      component={Link}
+      className={classes.navbarLinks}
+      onClick={() => setOpened(false)}
+    >
+      {label}
+    </Anchor>
   )
   const renderHeaderLinks = () => (
     <>
@@ -90,7 +96,9 @@ export default function AppWrapper(props) {
         </Anchor>
       </UnauthenticatedTemplate>
       <AuthenticatedTemplate>
-        <Anchor href="/add" className={classes.navbarLinks}>Add Wine</Anchor>
+        <Anchor href="/add" className={classes.navbarLinks}>
+          Add Wine
+        </Anchor>
         <Space w="md" />
         <Anchor
           className={classes.navbarLinks}
@@ -135,7 +143,8 @@ export default function AppWrapper(props) {
         <Footer height={60} p="md">
           <Center>
             <Text size="sm" color="gray">
-              🍷 Wine 🥂 Vino 🥂 Vin 🥂 Wein 🥂 Wijn 🥂 ワイン 🥂 紅酒 🥂 포도주 🥂 Vinum 🍷
+              🍷 Wine 🥂 Vino 🥂 Vin 🥂 Wein 🥂 Wijn 🥂 ワイン 🥂 紅酒 🥂 포도주
+              🥂 Vinum 🍷
             </Text>
           </Center>
         </Footer>

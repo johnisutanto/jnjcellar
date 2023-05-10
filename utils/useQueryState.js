@@ -89,7 +89,10 @@ export default function useQueryState(defaultState) {
     push(
       {
         pathname: new URL(asPath, "http://localhost/").pathname,
-        query: clearEmptyValues({ ...filterRouteParams(query, route), ...state }),
+        query: clearEmptyValues({
+          ...filterRouteParams(query, route),
+          ...state,
+        }),
       },
       undefined,
       {
