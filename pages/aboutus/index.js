@@ -33,6 +33,7 @@ const AboutUs = ({ bottleCounts }) => {
         </Text>
         <Space h="xl" />
         <Space h="xl" />
+        {/* eslint-disable-next-line @next/next/no-img-element -- Can't use Image yet */}
         <img
           src="https://wineimages.blob.core.windows.net/aboutus/JohniJuanBourbinSonoma.jpg"
           style={{
@@ -40,6 +41,7 @@ const AboutUs = ({ bottleCounts }) => {
             width: "100%",
             height: "500px",
           }}
+          alt="Wine Image"
         />
       </Container>
       <AuthenticatedTemplate>

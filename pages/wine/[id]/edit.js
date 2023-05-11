@@ -65,6 +65,7 @@ const EditWine = ({ filters }) => {
       dateAcquired: new Date(wine.DateAcquired),
       maturity: wine.Maturity,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- This need to be fixed soon
   }, [wine])
 
   const handleEditWine = async (newWine) => {
@@ -81,6 +82,7 @@ const EditWine = ({ filters }) => {
         setShowSuccessModal(true)
       })
   }
+
   return wine ? (
     <WineForm
       filters={filters}

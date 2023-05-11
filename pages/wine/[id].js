@@ -27,6 +27,8 @@ import {
   IconHome2,
   IconBuilding,
   IconPencil,
+  IconStar,
+  IconStarFilled,
 } from "@tabler/icons-react"
 import CellarContainer from "../../components/Cellar/CellarContainer"
 import { CELLARS } from "../../components/Cellar/index"
@@ -57,7 +59,7 @@ const fetcher = (...args) => fetch(...args).then((res) => res.json())
 const Wine = () => {
   const router = useRouter()
   const { id } = router.query
-  const { data: wine, error } = useSWR(id ? `/api/wine/${id}` : null, fetcher)
+  const { data: wine } = useSWR(id ? `/api/wine/${id}` : null, fetcher)
   const [currentWine, setCurrentWine] = useState(null)
 
   useEffect(() => {
@@ -120,6 +122,7 @@ const Wine = () => {
         })
       })
   }
+
   const handleAddWineToCellar = (cellarId) => async () => {
     const res = await axios.post("/api/addWineToCellar", {
       id: wine.Id,
@@ -136,11 +139,25 @@ const Wine = () => {
       color: "green",
     })
   }
+
   const getEmptyShelves = async () => {
     axios.get("/api/getEmptyShelves").then((res) => {
       setEmptyShelves(res.data)
     })
   }
+
+  const handleToggleFavorite = async () => {
+    axios
+      .post("/api/setIsFavorite", {
+        isFavorite: !currentWine.IsFavorite,
+        id,
+      })
+      .then((res) => {
+        console.log(`new wine is ${JSON.stringify(res)}`)
+        setCurrentWine(res.data)
+      })
+  }
+
   const Property = ({ name, value }) => (
     <>
       <Text size="sm" color="dimmed">
@@ -324,6 +341,17 @@ const Wine = () => {
                   href={`/wine/${id}/edit`}
                 >
                   <IconPencil size="2rem" />
+                </ActionIcon>
+                <ActionIcon
+                  variant="subtle"
+                  onClick={handleToggleFavorite}
+                  color={currentWine.IsFavorite ? "yellow" : "gray"}
+                >
+                  {currentWine.IsFavorite ? (
+                    <IconStarFilled size="2rem" />
+                  ) : (
+                    <IconStar size="2rem" />
+                  )}
                 </ActionIcon>
               </AuthenticatedTemplate>
             </Flex>

@@ -91,19 +91,30 @@ SELECT @countries as countries, @regions as regions, @producers as producers, @v
 }
 
 export const updateWine = async (id, wine) => {
-  // const wine = await WineDB.findByPk(id)
-  const fields = Object.keys(wine).map((key) => toSqlCase(key))
   const wineSql = omit(
     Object.fromEntries(
       Object.entries(wine).map(([key, value]) => [toSqlCase(key), value])
     ),
     ["Id", "Location"]
   )
-  console.log(`query ${JSON.stringify(wineSql)}`)
   const updatedWine = await WineDB.update(wineSql, {
     where: {
       Id: { [Op.eq]: id },
     },
   })
+  return updatedWine
+}
+
+export const setIsFavorite = async (id, isFavorite) => {
+  const updatedWine = await WineDB.update(
+    {
+      IsFavorite: isFavorite,
+    },
+    {
+      where: {
+        Id: { [Op.eq]: id },
+      },
+    }
+  )
   return updatedWine
 }
