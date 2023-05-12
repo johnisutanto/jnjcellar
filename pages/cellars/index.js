@@ -4,6 +4,7 @@ import useQueryState, { toCleanQueryString } from "../../utils/useQueryState"
 import {
   Box,
   Card,
+  Chip,
   Image,
   Text,
   Center,
@@ -28,6 +29,7 @@ const DEFAULT_FILTERS = {
   varietal: null,
   maturity: null,
   location: null,
+  isFavorite: false,
 }
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
@@ -93,6 +95,9 @@ export default function Home() {
     if (wineFilters.location) {
       params.Location = wineFilters.location
     }
+    if (wineFilters.isFavorite === "true") {
+      params.isFavorite = true
+    }
     setQueryString(toCleanQueryString(params))
   }, [wineFilters])
 
@@ -100,6 +105,13 @@ export default function Home() {
     setWineFilters({
       ...wineFilters,
       [filterName]: option,
+    })
+  }
+
+  const toggleIsFavorite = () => {
+    setWineFilters({
+      ...wineFilters,
+      isFavorite: !(wineFilters.isFavorite === "true"),
     })
   }
 
@@ -169,6 +181,12 @@ export default function Home() {
                 value={wineFilters.location}
                 onChange={handleWineFilter("location")}
               />
+              <Chip
+                onChange={toggleIsFavorite}
+                checked={wineFilters.isFavorite === "true"}
+              >
+                Favorite only
+              </Chip>
             </Group>
           )}
         </Center>
