@@ -25,7 +25,7 @@ import {
   IconPlus,
   IconCheck,
   IconHome2,
-  IconBuilding,
+  IconBuildingTunnel,
   IconPencil,
   IconStar,
   IconStarFilled,
@@ -71,7 +71,7 @@ const Wine = () => {
   const [selectedLocation, setSelectedLocation] = useState(null)
   const [selectedLocations, setSelectedLocations] = useState({
     STAIRCASE: [],
-    STORAGE: [],
+    STORAGEBIG: [],
   })
   const [selectedCellar, setSelectedCellar] = useState("STAIRCASE")
   const handleSelectLocation = (cellar) => (location) => {
@@ -94,7 +94,7 @@ const Wine = () => {
   }
   const [emptyShelves, setEmptyShelves] = useState({
     STAIRCASE: [],
-    STORAGE: [],
+    STORAGEBIG: [],
   })
   const isMobile = useMediaQuery("(max-width: 600px)")
   const onOpen = (loc, cellar) => () => {
@@ -131,7 +131,7 @@ const Wine = () => {
     })
     setCurrentWine(res.data)
     setOpenCellarDialog(false)
-    setSelectedLocations({ STAIRCASE: [], STORAGE: [] })
+    setSelectedLocations({ STAIRCASE: [], STORAGEBIG: [] })
     showNotification({
       title: "Wine bottles added successfully",
       message: "Come back soon to enjoy those bottles",
@@ -203,12 +203,12 @@ const Wine = () => {
           </Group>
           <Space h="md" />
           <Group>
-            <IconBuilding size={30} color={"#E64980"} />
-            {(value || {})?.STORAGE?.map((val) => (
+            <IconBuildingTunnel size={30} color={"#E64980"} />
+            {(value || {})?.STORAGEBIG?.map((val) => (
               <Button
                 variant="outline"
                 key={`location-${val}`}
-                onClick={onOpen(val, "STORAGE")}
+                onClick={onOpen(val, "STORAGEBIG")}
               >
                 {val}
               </Button>
@@ -219,7 +219,7 @@ const Wine = () => {
               onClick={() => {
                 getEmptyShelves()
                 setOpenCellarDialog(true)
-                setSelectedCellar("STORAGE")
+                setSelectedCellar("STORAGEBIG")
               }}
             >
               Add

@@ -86,7 +86,7 @@ SELECT @countries as countries, @regions as regions, @producers as producers, @v
         .sort(),
     ])
   )
-  filters["locations"] = ["Staircase", "Storage"]
+  filters["locations"] = ["Staircase", "Storagebig"]
   return filters
 }
 
